@@ -50,7 +50,7 @@ When theme-aware logos are enabled, the plugin supplies GLPI's native variables:
 - `--glpi-logo-dark` and `--glpi-logo-dark-reduced` for black expanded/collapsed navigation logos.
 - `--glpi-logo-dark-login` and `--glpi-logo-light-login` for the login logo in the corresponding GLPI palette.
 
-This keeps the expanded/collapsed menu and login behavior aligned with GLPI's own theme implementation instead of targeting internal logo elements directly. The bundled logo and favicon files are original, neutral demonstration assets. They do not contain GLPI or other third-party product marks.
+This keeps the expanded/collapsed menu and login behavior aligned with GLPI's own theme implementation instead of targeting internal logo elements directly. The draft is awaiting the selected original demonstration artwork. Do not publish or install a release ZIP until `logo.png`, the neutral sample logo variants and the sample favicon have replaced the previous third-party-branded files in `resources/imagenes/`.
 
 ## Data and uninstall
 
