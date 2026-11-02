@@ -48,7 +48,7 @@ jobs:
       - name: Verify repository layout
         run: |
           test -d mod
-          unexpected="$(find . -maxdepth 1 -mindepth 1 ! -name '.github' ! -name 'mod' -print)"
+          unexpected="$(find . -maxdepth 1 -mindepth 1 ! -name '.github' ! -name '.git' ! -name 'mod' -print)"
           test -z "$unexpected"
 
       - name: PHP syntax
