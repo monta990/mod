@@ -33,8 +33,8 @@ $expect(
     'setup.php must declare plugin version 12.0.0.'
 );
 $expect(
-    preg_match("/'min' => '12\\.0\\.0'/", $setup) === 1
-    && preg_match("/'max' => '12\\.1\\.0'/", $setup) === 1,
+    preg_match("/const PLUGIN_MOD_MIN_GLPI_VERSION = '12\\.0\\.0';/", $setup) === 1
+    && preg_match("/const PLUGIN_MOD_MAX_GLPI_VERSION = '12\\.1\\.0';/", $setup) === 1,
     'setup.php must restrict compatibility to GLPI 12.0.x.'
 );
 $expect(
