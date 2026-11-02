@@ -36,7 +36,7 @@ All notable changes to UI Branding are documented here.
 - Validate image MIME, structure, dimensions and size before replacing existing files.
 - Accept logo uploads at or above GLPI's recommended minimum dimensions, including the supplied 53×53, 107×55 and 253×130 CY Alimentos PNGs.
 - Retain older uploads that fall below the minimum, but serve the correctly-sized bundled image until a compliant logo is uploaded.
-- Select dark artwork on light GLPI themes and white artwork on dark themes.
+- Select dark artwork on light GLPI themes and a genuinely light, high-contrast mark on dark themes; the generated 53×53 light mark is checked against the dark sidebar background.
 - Validate ICO directory entries and embedded image data before accepting a favicon.
 - Stage multi-file uploads and restore the previous files if a replacement or settings write fails.
 - Use explicit MIME types and ETag/last-modified validation for public assets.
