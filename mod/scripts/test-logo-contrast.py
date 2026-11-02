@@ -2,8 +2,16 @@
 """Regression test for generated dark-theme logo contrast."""
 from pathlib import Path
 from tempfile import TemporaryDirectory
+import importlib.util
 
 from PIL import Image
+
+GENERATOR_PATH = Path(__file__).with_name('generate-assets.py')
+SPEC = importlib.util.spec_from_file_location('generate_assets', GENERATOR_PATH)
+if SPEC is None or SPEC.loader is None:
+    raise RuntimeError('Unable to load the artwork generator for contrast testing.')
+generate_assets = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(generate_assets)
 
 from generate_assets import (
     DARK_THEME_MARK_BACKGROUND,
