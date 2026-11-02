@@ -21,7 +21,8 @@ All notable changes to UI Branding are documented here.
 - Made the plugin-root `logo.png` an icon-only symbol, with no wordmark, subtitle or version.
 - Added an editable SVG master and reproducible generator for `logo.png`, light/dark logo variants, the multi-resolution sample ICO and a neutral 1920×1080 login background.
 - Generated raster assets are included in the installation ZIP under `resources/images/`; no external product marks are used.
-- Generated logo PNGs use GLPI's exact native canvas sizes: 53×53, 100×55 and 250×138 pixels for standard and theme-aware variants.
+- Bundled sample logo PNGs use fixed reference canvases of 53×53, 100×55 and 250×138 pixels; uploaded logos are validated using minimum dimensions, not exact-size equality.
+- Upload minimums follow GLPI's published recommendations: 40×40 for collapsed navigation, 100×55 for the main navigation logo, and 220×130 for the login logo. Larger images are accepted.
 - Keep the editable SVG and asset-generation documentation in the source repository; exclude them, Markdown notes and development scripts from the runtime ZIP.
 - Expanded CI to stable PHP 8.3, 8.4 and 8.5, plus a non-blocking PHP 8.6 pre-release/nightly check.
 - Use GLPI's native PSR-4 plugin autoloader.
@@ -33,7 +34,8 @@ All notable changes to UI Branding are documented here.
 ### Fixed
 - Preserve existing configuration values when optional POST fields are omitted.
 - Validate image MIME, structure, dimensions and size before replacing existing files.
-- Require exact logo-upload dimensions and fall back to correctly-sized bundled assets when older persisted uploads do not meet the current logo contract.
+- Accept logo uploads at or above GLPI's recommended minimum dimensions, including the supplied 53×53, 107×55 and 253×130 CY Alimentos PNGs.
+- Retain older uploads that fall below the minimum, but serve the correctly-sized bundled image until a compliant logo is uploaded.
 - Select dark artwork on light GLPI themes and white artwork on dark themes.
 - Validate ICO directory entries and embedded image data before accepting a favicon.
 - Stage multi-file uploads and restore the previous files if a replacement or settings write fails.
