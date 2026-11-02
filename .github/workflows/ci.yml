@@ -18,7 +18,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: ["8.2", "8.3", "8.4"]
+        include:
+          - php: "8.3"
+            experimental: false
+          - php: "8.4"
+            experimental: false
+          - php: "8.5"
+            experimental: false
+          - php: "8.6"
+            experimental: true
+    continue-on-error: ${{ matrix.experimental }}
+
+    name: Validate PHP ${{ matrix.php }}${{ matrix.experimental && ' (experimental)' || '' }}
 
     steps:
       - name: Checkout
@@ -31,30 +42,35 @@ jobs:
           extensions: fileinfo, mbstring
           coverage: none
 
+      - name: Show PHP runtime
+        run: php -v
+
       - name: PHP syntax
         run: |
-          find setup.php hook.php src -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+          find mod/setup.php mod/hook.php mod/src -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+          php -l mod/scripts/validate-release.php
 
-      - name: Validate release metadata
-        run: php scripts/validate-release.php
+      - name: Validate release metadata and folder layout
+        run: php mod/scripts/validate-release.php
 
       - name: Validate gettext catalogs
         run: |
           sudo apt-get update
           sudo apt-get install -y gettext
-          for po in locales/*.po; do
+          for po in mod/locales/*.po; do
             msgfmt --check --check-format -o /tmp/catalog.mo "$po"
           done
 
       - name: Build release ZIP
         run: |
-          bash scripts/package.sh dist
+          bash mod/scripts/package.sh dist
           test -f dist/mod-12.0.0.zip
           test "$(unzip -Z1 dist/mod-12.0.0.zip | grep -c '^mod/')" -gt 0
+          ! unzip -Z1 dist/mod-12.0.0.zip | grep -q '^mod/scripts/'
           ! unzip -Z1 dist/mod-12.0.0.zip | grep -q '^mod/\.git'
 
       - name: Upload release ZIP artifact
-        if: matrix.php == '8.2'
+        if: matrix.php == '8.3' && !matrix.experimental
         uses: actions/upload-artifact@v4
         with:
           name: ui-branding-12.0.0
@@ -75,17 +91,17 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.2"
+          php-version: "8.3"
           extensions: fileinfo, mbstring
           coverage: none
 
       - name: Validate
         run: |
-          find setup.php hook.php src -type f -name '*.php' -print0 | xargs -0 -n1 php -l
-          php scripts/validate-release.php
+          find mod/setup.php mod/hook.php mod/src -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+          php mod/scripts/validate-release.php
 
       - name: Build release ZIP
-        run: bash scripts/package.sh dist
+        run: bash mod/scripts/package.sh dist
 
       - name: Publish ZIP
         uses: softprops/action-gh-release@v2
