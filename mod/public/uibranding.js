@@ -1,8 +1,26 @@
 (function () {
     'use strict';
 
+    var previewStates = new Map();
+
+    function clearPreview(input) {
+        var state = previewStates.get(input);
+        if (!state) {
+            return;
+        }
+
+        if (state.preview && state.preview.parentNode) {
+            state.preview.parentNode.removeChild(state.preview);
+        }
+
+        state.originalPreview.hidden = state.wasHidden;
+        URL.revokeObjectURL(state.objectUrl);
+        previewStates.delete(input);
+    }
+
     function updatePreview(input) {
         if (!input || !input.files || input.files.length === 0) {
+            clearPreview(input);
             return;
         }
 
@@ -12,42 +30,37 @@
             return;
         }
 
-        var preview = document.getElementById(previewId);
-        if (!preview) {
+        var originalPreview = document.getElementById(previewId);
+        if (!originalPreview || originalPreview.tagName !== 'IMG' || !originalPreview.parentNode) {
             return;
         }
 
-        var previousUrl = preview.getAttribute('data-mod-object-url');
-        if (previousUrl) {
-            URL.revokeObjectURL(previousUrl);
-        }
+        clearPreview(input);
 
         var objectUrl = URL.createObjectURL(file);
-        preview.setAttribute('src', objectUrl);
-        preview.setAttribute('data-mod-object-url', objectUrl);
+        var temporaryPreview = document.createElement('img');
+        temporaryPreview.className = originalPreview.className;
+        temporaryPreview.alt = originalPreview.alt;
+        temporaryPreview.src = objectUrl;
+
+        var wasHidden = originalPreview.hidden;
+        originalPreview.hidden = true;
+        originalPreview.parentNode.insertBefore(temporaryPreview, originalPreview.nextSibling);
+
+        previewStates.set(input, {
+            originalPreview: originalPreview,
+            preview: temporaryPreview,
+            wasHidden: wasHidden,
+            objectUrl: objectUrl,
+        });
     }
 
     function restorePreview(input) {
-        var previewId = input.getAttribute('data-mod-preview');
-        if (!previewId) {
-            return;
-        }
+        clearPreview(input);
+    }
 
-        var preview = document.getElementById(previewId);
-        if (!preview) {
-            return;
-        }
-
-        var previousUrl = preview.getAttribute('data-mod-object-url');
-        if (previousUrl) {
-            URL.revokeObjectURL(previousUrl);
-            preview.removeAttribute('data-mod-object-url');
-        }
-
-        var defaultSrc = preview.getAttribute('data-mod-default-src');
-        if (defaultSrc) {
-            preview.setAttribute('src', defaultSrc);
-        }
+    function clearAllPreviews() {
+        Array.from(previewStates.keys()).forEach(clearPreview);
     }
 
     function initFilePreviews() {
@@ -60,6 +73,8 @@
                 }
             });
         });
+
+        window.addEventListener('pagehide', clearAllPreviews, { once: true });
     }
 
     if (document.readyState === 'loading') {

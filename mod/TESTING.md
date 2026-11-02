@@ -54,7 +54,7 @@ Before testing an update, back up the database and `GLPI_PLUGIN_DOC_DIR/mod/`. R
 
 - [ ] Upload a valid JPG/JPEG background of at least 1920×1080 and verify the preview and login page.
 - [ ] Upload a valid ICO and verify the browser tab/favicon in authenticated and anonymous pages.
-- [ ] Confirm preview updates when choosing a file and returns to the served resource when the file selection is cleared.
+- [ ] Confirm preview updates using a temporary image, the original served image remains untouched, and clearing the selection restores the original preview.
 
 ## 4. Upload validation and failure handling
 
@@ -110,6 +110,10 @@ python3 -m pip install -r mod/scripts/requirements-assets.txt
 
 python3 mod/scripts/generate-assets.py mod
 python3 mod/scripts/test-logo-contrast.py
+
+node --check mod/public/uibranding.js
+node --check mod/public/favicon.js
+node --test mod/scripts/test-public-js.cjs
 
 find mod/setup.php mod/hook.php mod/src -type f -name '*.php' -print0 | xargs -0 -n1 php -l
 php -l mod/scripts/validate-release.php

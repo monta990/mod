@@ -97,6 +97,9 @@ jobs:
             node --check "$file"
           done < <(find mod/public -type f -name '*.js' ! -name '*.min.js' -print0)
 
+      - name: Test public JavaScript behavior
+        run: node --test mod/scripts/test-public-js.cjs
+
       - name: Test upgrade data preservation
         run: php mod/scripts/test-upgrade-preservation.php
 

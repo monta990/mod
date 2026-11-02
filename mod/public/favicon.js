@@ -3,29 +3,21 @@
 
     function applyCustomFavicon() {
         var custom = document.querySelector('link[data-mod-favicon]');
-        if (!custom) {
+        if (!custom || !document.head) {
             return;
         }
 
-        var href = custom.href;
-        if (!href) {
-            return;
-        }
-
-        // GLPI 12 adds its native favicon after plugin header tags. Replace
-        // every existing favicon declaration with one custom declaration so
-        // the browser has exactly one authoritative favicon source.
+        // Keep the server-rendered, plugin-owned link as the source of truth.
+        // Move that same node to the end of <head> so it takes precedence over
+        // GLPI's native favicon without copying a DOM-derived URL into a sink.
         document.querySelectorAll('link[rel~="icon"], link[rel="shortcut icon"]').forEach(function (icon) {
-            icon.remove();
+            if (icon !== custom) {
+                icon.remove();
+            }
         });
 
-        var favicon = document.createElement('link');
-        favicon.setAttribute('rel', 'icon');
-        favicon.setAttribute('type', 'image/x-icon');
-        favicon.setAttribute('sizes', '16x16');
-        favicon.setAttribute('href', href);
-        favicon.setAttribute('data-mod-favicon-applied', '1');
-        document.head.appendChild(favicon);
+        custom.setAttribute('rel', 'icon');
+        document.head.appendChild(custom);
     }
 
     if (document.readyState === 'loading') {
