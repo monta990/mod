@@ -448,6 +448,7 @@ final class BrandManager
         $staged = [];
         $backups = [];
         $installed = [];
+        $rollbackFailed = false;
 
         try {
             // Validate every upload before moving or replacing any existing file.
@@ -489,12 +490,14 @@ final class BrandManager
         } catch (\Throwable $exception) {
             foreach (array_reverse($installed) as $destination) {
                 if (is_file($destination) && !@unlink($destination)) {
+                    $rollbackFailed = true;
                     error_log(sprintf('UI Branding: unable to remove partially installed file "%s".', $destination));
                 }
             }
 
             foreach ($backups as $destination => $backupPath) {
                 if (is_file($backupPath) && !@rename($backupPath, $destination)) {
+                    $rollbackFailed = true;
                     error_log(sprintf('UI Branding: unable to restore previous resource "%s".', $destination));
                 }
             }
@@ -502,7 +505,12 @@ final class BrandManager
             throw $exception;
         } finally {
             if (is_dir($stagingDir)) {
-                Toolbox::deleteDir($stagingDir);
+                if ($rollbackFailed) {
+                    // Keep failed rollback backups available for manual recovery.
+                    error_log(sprintf('UI Branding: transaction recovery files were left in "%s".', $stagingDir));
+                } else {
+                    Toolbox::deleteDir($stagingDir);
+                }
             }
         }
 
