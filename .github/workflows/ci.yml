@@ -55,7 +55,9 @@ jobs:
           python -m pip install -r mod/scripts/requirements-assets.txt
 
       - name: Generate plugin logo and sample resources
-        run: python mod/scripts/generate-assets.py mod
+        run: |
+          python mod/scripts/generate-assets.py mod
+          python mod/scripts/test-logo-contrast.py
 
       - name: Install gettext
         run: |
@@ -141,7 +143,9 @@ jobs:
           python -m pip install -r mod/scripts/requirements-assets.txt
 
       - name: Generate plugin logo and sample resources
-        run: python mod/scripts/generate-assets.py mod
+        run: |
+          python mod/scripts/generate-assets.py mod
+          python mod/scripts/test-logo-contrast.py
 
       - name: Install gettext
         run: |
