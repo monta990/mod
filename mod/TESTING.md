@@ -37,7 +37,8 @@ GLPI 12's current published requirements specify PHP 8.3 or newer. The plugin th
 - [ ] Verify the sample icon and horizontal/square logo variants display correctly in the configuration UI.
 - [ ] Verify light and dark logo variants on the corresponding GLPI palettes.
 - [ ] Confirm a fresh installation falls back to the bundled sample artwork.
-- [ ] Confirm administrator uploads override the bundled sample files without modifying plugin code.\n- [ ] Run `php scripts/test-upgrade-preservation.php` and confirm settings, existing uploads and unrelated files survive a repeated update.
+- [ ] Confirm administrator uploads override the bundled sample files without modifying plugin code.
+- [ ] Run `php scripts/test-upgrade-preservation.php` and confirm settings, existing uploads and unrelated files survive a repeated update.
 
 ## Branding behavior
 
@@ -58,7 +59,15 @@ GLPI 12's current published requirements specify PHP 8.3 or newer. The plugin th
 - [ ] Submit multiple files with one invalid file; verify previous files and settings remain unchanged.
 - [ ] Force a file-write failure on staging; verify previous files are restored, or recovery data is retained and logged.
 
-## GitHub version check\n\n- [ ] Verify the configuration page shows the installed version.\n- [ ] Publish a higher stable GitHub release and confirm the page shows an update alert and a link to the release list.\n- [ ] Confirm draft and pre-release tags are ignored.\n- [ ] Confirm a network failure does not affect page loading, settings or uploads and is retried after the short failure cache.\n- [ ] Confirm a successful result is cached for six hours.\n\n## Routing, permissions and cache
+## GitHub version check
+
+- [ ] Verify the configuration page shows the installed version.
+- [ ] Publish a higher stable GitHub release and confirm the page shows an update alert and a link to the release list.
+- [ ] Confirm draft and pre-release tags are ignored.
+- [ ] Confirm a network failure does not affect page loading, settings or uploads and is retried after the short failure cache.
+- [ ] Confirm a successful result is cached for six hours.
+
+## Routing, permissions and cache
 
 - [ ] Test normal `plugins/mod` installation.
 - [ ] Test Marketplace installation if used by the deployment.
