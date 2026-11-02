@@ -1,0 +1,288 @@
+{% set title = __('UI Branding', 'mod') %}
+{% set menu = ['config', 'plugin', 'mod'] %}
+{% extends 'layout/page_skeleton.html.twig' %}
+
+{% block content %}
+{% import 'components/form/fields_macros.html.twig' as fields %}
+
+<div class="container-fluid px-4 mt-3 mod-uibranding-page">
+    <div class="card mod-main-card">
+        <form id="main-form" name="uibranding_form" method="post" action="{{ url }}"
+              enctype="multipart/form-data" data-submit-once>
+            <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}" />
+
+            <div class="card-header mod-section-header">
+                <h2 class="card-title mod-section-title ms-5 mb-0">
+                    <span class="ribbon ribbon-bookmark ribbon-top ribbon-start bg-blue s-1" aria-hidden="true">
+                        <i class="fs-2x ti ti-paint"></i>
+                    </span>
+                    {{ __('UI Branding', 'mod') }}
+                </h2>
+            </div>
+
+            <div class="card-body">
+                <div class="card mod-section-card">
+                    <div class="card-header mod-section-header">
+                        <h3 class="card-title mod-section-title ms-5 mb-0">
+                            <span class="ribbon ribbon-bookmark ribbon-top ribbon-start bg-blue s-1" aria-hidden="true">
+                                <i class="fs-2x ti ti-adjustments"></i>
+                            </span>
+                            {{ __('Apply Modifications', 'mod') }}
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12 col-xl-6">
+                                {{ fields.textField('title', page_title, __('Page Title', 'mod')) }}
+                                {{ fields.dropdownYesNo('show_custom_logos', show_custom_logos, __('Show custom logos', 'mod')) }}
+                                {{ fields.dropdownYesNo('show_custom_favicon', show_custom_favicon, __('Show custom favicon', 'mod')) }}
+                            </div>
+                            <div class="col-12 col-xl-6">
+                                {{ fields.dropdownYesNo('show_background', show_background, __('Show login background', 'mod')) }}
+                                {{ fields.dropdownYesNo('use_theme_logos', use_theme_logos, __('Enable theme-based logo modifications', 'mod')) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mod-section-card mt-3">
+                    <div class="card-header mod-section-header">
+                        <h3 class="card-title mod-section-title ms-5 mb-0">
+                            <span class="ribbon ribbon-bookmark ribbon-top ribbon-start bg-blue s-1" aria-hidden="true">
+                                <i class="fs-2x ti ti-photo"></i>
+                            </span>
+                            {{ __('Custom Images', 'mod') }}
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row align-items-center g-3">
+                            <div class="col-12 col-xl-6">
+                                <div class="form-field row align-items-center">
+                                    <label class="col-form-label col-xxl-5 text-xxl-end" for="background_input">
+                                        {{ __('Background', 'mod') }} (min. 1920x1080 - JPG)
+                                    </label>
+                                    <div class="col-xxl-7">
+                                        <input type="file" class="form-control" name="background" accept="image/jpeg"
+                                               id="background_input" data-mod-preview="preview_background" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-xl-6 text-center">
+                                <img id="preview_background" class="img-fluid mod-preview-background"
+                                     src="{{ preview_url }}/background"
+                                     data-mod-default-src="{{ preview_url }}/background"
+                                     alt="{{ __('Background', 'mod') }}" />
+                            </div>
+
+                            <div class="col-12"><hr class="my-2" /></div>
+
+                            <div class="col-12 col-xl-6">
+                                <div class="form-field row align-items-center">
+                                    <label class="col-form-label col-xxl-5 text-xxl-end" for="favicon_input">
+                                        {{ __('Favicon', 'mod') }} (16x16 - ICO)
+                                    </label>
+                                    <div class="col-xxl-7">
+                                        <input type="file" class="form-control" name="favicon" accept=".ico,image/x-icon"
+                                               id="favicon_input" data-mod-preview="preview_favicon" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-xl-6 text-center">
+                                <img id="preview_favicon" class="mod-preview-favicon"
+                                     src="{{ preview_url }}/favicon"
+                                     data-mod-default-src="{{ preview_url }}/favicon"
+                                     alt="{{ __('Favicon', 'mod') }}" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="default-logos-section" class="card mod-section-card mt-3" {% if use_theme_logos %}style="display:none"{% endif %}>
+                    <div class="card-header mod-section-header">
+                        <h3 class="card-title mod-section-title ms-5 mb-0">
+                            <span class="ribbon ribbon-bookmark ribbon-top ribbon-start bg-blue s-1" aria-hidden="true">
+                                <i class="fs-2x ti ti-brand-abstract"></i>
+                            </span>
+                            {{ __('Standard logos', 'mod') }}
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row row-cards g-3">
+                            {% for logo in base_logos %}
+                                <div class="col-12">
+                                    <div class="row align-items-center g-3">
+                                        <div class="col-12 col-xl-7">
+                                            <div class="form-field row align-items-center">
+                                                <label class="col-form-label col-xxl-5 text-xxl-end" for="{{ logo.name }}_input">
+                                                    {{ logo.label }} ({{ logo.size }} - PNG)
+                                                </label>
+                                                <div class="col-xxl-7">
+                                                    <input type="file" class="form-control" name="{{ logo.name }}" accept="image/png"
+                                                           id="{{ logo.name }}_input" data-mod-preview="preview_{{ logo.name }}" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-xl-5 text-center">
+                                            <img id="preview_{{ logo.name }}" class="img-fluid mod-preview-logo"
+                                                 src="{{ preview_url }}/{{ logo.name }}"
+                                                 data-mod-default-src="{{ preview_url }}/{{ logo.name }}"
+                                                 alt="{{ logo.label }}" />
+                                        </div>
+                                    </div>
+                                </div>
+                                {% if not loop.last %}<div class="col-12"><hr class="my-0" /></div>{% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div id="theme-logos-section" class="card mod-section-card mt-3" {% if not use_theme_logos %}style="display:none"{% endif %}>
+                    <div class="card-header mod-section-header">
+                        <h3 class="card-title mod-section-title ms-5 mb-0">
+                            <span class="ribbon ribbon-bookmark ribbon-top ribbon-start bg-blue s-1" aria-hidden="true">
+                                <i class="fs-2x ti ti-palette"></i>
+                            </span>
+                            {{ __('Theme-based logos', 'mod') }}
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row row-cards g-3">
+                            {% for logo in theme_logos %}
+                                <div class="col-12">
+                                    <div class="row align-items-center g-3">
+                                        <div class="col-12 col-xl-7">
+                                            <div class="form-field row align-items-center">
+                                                <label class="col-form-label col-xxl-5 text-xxl-end" for="{{ logo.name }}_input">
+                                                    {{ logo.label }} ({{ logo.size }} - PNG)
+                                                </label>
+                                                <div class="col-xxl-7">
+                                                    <input type="file" class="form-control" name="{{ logo.name }}" accept="image/png"
+                                                           id="{{ logo.name }}_input" data-mod-preview="preview_{{ logo.name }}" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-xl-5 text-center">
+                                            <img id="preview_{{ logo.name }}" class="img-fluid mod-preview-logo"
+                                                 src="{{ preview_url }}/{{ logo.name }}"
+                                                 data-mod-default-src="{{ preview_url }}/{{ logo.name }}"
+                                                 alt="{{ logo.label }}" />
+                                        </div>
+                                    </div>
+                                </div>
+                                {% if not loop.last %}<div class="col-12"><hr class="my-0" /></div>{% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer d-flex justify-content-between align-items-center gap-2">
+                <button class="btn btn-outline-secondary" type="submit" name="clear_cache" value="1" formnovalidate>
+                    <i class="ti ti-refresh me-1" aria-hidden="true"></i>
+                    {{ __('Clear cache', 'mod') }}
+                </button>
+                <button class="btn btn-primary" type="submit" name="update" value="1">
+                    <i class="ti ti-device-floppy me-1" aria-hidden="true"></i>
+                    {{ _x('button', 'Save') }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    /* GLPI may wrap plugin content in a breakpoint-constrained `.container`.
+     * Keep this configuration page at the full available width. */
+    .page-body > .container.container-fluid {
+        width: 100%;
+        max-width: none;
+    }
+
+
+    .mod-uibranding-page {
+        width: 100%;
+        margin-bottom: 0;
+    }
+
+    .mod-main-card {
+        width: 100%;
+        max-width: none;
+    }
+
+    .mod-section-card {
+        width: 100%;
+        border-color: var(--tblr-border-color);
+        box-shadow: none;
+    }
+
+    .mod-section-header {
+        position: relative;
+        min-height: 2.75rem;
+        padding-top: .65rem;
+        padding-bottom: .65rem;
+    }
+
+    .mod-section-title {
+        color: var(--tblr-body-color);
+        font-weight: 500;
+        line-height: 1.35;
+    }
+
+    .mod-section-title .ribbon {
+        color: #fff;
+    }
+
+    .mod-preview-background {
+        display: block;
+        max-width: 100%;
+        width: auto;
+        max-height: 220px;
+        margin-inline: auto;
+        object-fit: contain;
+    }
+
+    .mod-preview-logo {
+        display: block;
+        max-width: 100%;
+        width: auto;
+        max-height: 180px;
+        margin-inline: auto;
+        object-fit: contain;
+    }
+
+    .mod-preview-favicon {
+        display: block;
+        width: 64px;
+        height: 64px;
+        image-rendering: auto;
+        margin-inline: auto;
+    }
+
+    @media (min-width: 1200px) {
+        .mod-preview-logo {
+            max-height: 150px;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const selector = document.querySelector("select[name='use_theme_logos']");
+        const themeSection = document.getElementById('theme-logos-section');
+        const standardSection = document.getElementById('default-logos-section');
+
+        if (!selector || !themeSection || !standardSection) {
+            return;
+        }
+
+        const updateSections = () => {
+            const enabled = selector.value === '1';
+            themeSection.style.display = enabled ? '' : 'none';
+            standardSection.style.display = enabled ? 'none' : '';
+        };
+
+        selector.addEventListener('change', updateSections);
+        updateSections();
+    });
+</script>
+{% endblock content %}
