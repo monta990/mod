@@ -188,6 +188,21 @@ final class BrandManager
         return self::RESOURCE_DEFINITIONS[$resourceName]['mime'] ?? 'image/x-icon';
     }
 
+    private static function hasExpectedImageDimensions(string $resourceName, string $path): bool
+    {
+        $expected = self::RESOURCE_DEFINITIONS[$resourceName]['exact_dimensions'] ?? null;
+        if ($expected === null) {
+            return true;
+        }
+
+        $imageInfo = @getimagesize($path);
+
+        return is_array($imageInfo)
+            && ($imageInfo[2] ?? null) === IMAGETYPE_PNG
+            && (int) $imageInfo[0] === $expected[0]
+            && (int) $imageInfo[1] === $expected[1];
+    }
+
     public static function getCurrentResourceFile(string $resourceName): ?string
     {
         if (!self::isValidResourceKey($resourceName)) {
@@ -196,14 +211,23 @@ final class BrandManager
 
         $resource = self::getImageResources()[$resourceName];
 
-        // Prefer the administrator-uploaded resource. Fall back to the
-        // bundled resource so previews and runtime branding remain available
-        // even when the plugin data directory has not been initialized yet.
-        if (is_file($resource['current']) && is_readable($resource['current'])) {
+        // Retain old administrator uploads, but do not serve logo files from
+        // older versions when their intrinsic dimensions violate GLPI's
+        // current logo contract. In that case the bundled, correctly-sized
+        // resource is used until the administrator uploads a compliant logo.
+        if (
+            is_file($resource['current'])
+            && is_readable($resource['current'])
+            && self::hasExpectedImageDimensions($resourceName, $resource['current'])
+        ) {
             return $resource['current'];
         }
 
-        if (is_file($resource['default']) && is_readable($resource['default'])) {
+        if (
+            is_file($resource['default'])
+            && is_readable($resource['default'])
+            && self::hasExpectedImageDimensions($resourceName, $resource['default'])
+        ) {
             return $resource['default'];
         }
 
