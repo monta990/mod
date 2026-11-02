@@ -147,3 +147,18 @@ msgstr "La versión instalada es más reciente que la última versión estable p
 
 msgid "View releases"
 msgstr "Ver versiones"
+
+msgid "Minimum 40x40"
+msgstr "Mínimo 40x40"
+
+msgid "Minimum 100x55"
+msgstr "Mínimo 100x55"
+
+msgid "Minimum 220x130"
+msgstr "Mínimo 220x130"
+
+msgid "Unable to save UI Branding settings. Check the GLPI logs for more information."
+msgstr "No se pudo guardar la configuración de UI Branding. Consulta los registros de GLPI para obtener más información."
+
+msgid "Unable to clear the GLPI cache. Check the GLPI logs for more information."
+msgstr "No se pudo limpiar la caché de GLPI. Consulta los registros para obtener más información."
