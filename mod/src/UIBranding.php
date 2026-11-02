@@ -5,7 +5,7 @@ namespace GlpiPlugin\Mod;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 if (!defined('GLPI_ROOT')) {
-    http_response_code(403);
+    header('HTTP/1.1 403 Forbidden');
     header('Content-Type: text/plain; charset=UTF-8');
     return;
 }
