@@ -132,6 +132,11 @@ jobs:
       - name: Generate plugin logo and sample resources
         run: python mod/scripts/generate-assets.py mod
 
+      - name: Install gettext
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gettext
+
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:

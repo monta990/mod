@@ -31,6 +31,8 @@ GLPI 12's current published requirements specify PHP 8.3 or newer. The plugin th
 
 ## Demonstration branding assets
 
+- [ ] Confirm the plugin-root `logo.png` contains only the symbol, with no wordmark, subtitle or version.
+
 - [ ] Inspect `resources/images/` and confirm all sample logos/favicon are original, neutral assets with no GLPI or third-party brand marks.
 - [ ] Verify the sample icon and horizontal/square logo variants display correctly in the configuration UI.
 - [ ] Verify light and dark logo variants on the corresponding GLPI palettes.
