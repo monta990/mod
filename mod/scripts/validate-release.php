@@ -71,7 +71,6 @@ $required = [
     'public/uibranding.js',
     'public/favicon.js',
     'resources/modifiers.ini',
-    'resources/imagenes',
 ];
 
 foreach ($required as $relative) {
@@ -79,7 +78,8 @@ foreach ($required as $relative) {
 }
 
 $expect(basename($root) === 'mod', 'All plugin files must be located inside the mod/ directory.');
-$expect(!is_dir($root . '/resources/images'), 'Bundled images must be stored in resources/imagenes/.');
+$expect(is_dir($root . '/resources/imagenes'), 'Bundled images must be stored in resources/imagenes/.');
+$expect(!is_dir($root . '/resources/images'), 'Do not keep an English-named resources/images directory.');
 $expect(!is_dir($root . '/front'), 'The modern GLPI 12 plugin must not add legacy front/ entry points.');
 $expect(!is_dir($root . '/ajax'), 'The modern GLPI 12 plugin must not add legacy ajax/ entry points.');
 $expect(!is_dir($root . '/vendor'), 'The plugin must not ship a private vendor directory.');
