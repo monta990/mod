@@ -28,9 +28,28 @@ $expect = static function (bool $condition, string $message) use (&$errors): voi
 $setup = $read('setup.php');
 $xml = $read('mod.xml');
 
+$repositoryRoot = dirname($root);
+$workflowPath = $repositoryRoot . '/.github/workflows/ci.yml';
+$workflow = is_file($workflowPath) ? (file_get_contents($workflowPath) ?: '') : '';
+$releasePolicyPath = $repositoryRoot . '/RELEASE.md';
+$releasePolicy = is_file($releasePolicyPath) ? (file_get_contents($releasePolicyPath) ?: '') : '';
+
 $expect(
-    preg_match("/const PLUGIN_MOD_VERSION = '12\\.0\\.0';/", $setup) === 1,
-    'setup.php must declare plugin version 12.0.0.'
+    preg_match('/^\\s*- "12\\.0\\.1"\\s*$/m', $workflow) === 1
+    && str_contains($workflow, "if: github.ref == 'refs/tags/12.0.1'")
+    && !str_contains($workflow, "startsWith(github.ref")
+    && !str_contains($workflow, "v12.0.1"),
+    'Release automation must use the numeric 12.0.1 tag without a leading v.'
+);
+$expect(
+    str_contains($releasePolicy, 'Do not add a leading `v`')
+    && str_contains($releasePolicy, '`12.0.1`'),
+    'The repository must document numeric-only release tags without a leading v.'
+);
+
+$expect(
+    preg_match("/const PLUGIN_MOD_VERSION = '12\\.0\\.1';/", $setup) === 1,
+    'setup.php must declare plugin version 12.0.1.'
 );
 $expect(
     preg_match("/const PLUGIN_MOD_MIN_GLPI_VERSION = '12\\.0\\.0';/", $setup) === 1
@@ -39,9 +58,9 @@ $expect(
 );
 $expect(
     preg_match('/<id>mod<\\/id>/', $xml) === 1
-    && preg_match('/<version>12\\.0\\.0<\\/version>/', $xml) === 1
-    && preg_match('/<num>12\\.0\\.0<\\/num>/', $xml) === 1,
-    'mod.xml must identify plugin mod and version 12.0.0.'
+    && preg_match('/<version>12\\.0\\.1<\\/version>/', $xml) === 1
+    && preg_match('/<num>12\\.0\\.1<\\/num>/', $xml) === 1,
+    'mod.xml must identify plugin mod and version 12.0.1.'
 );
 $expect(
     preg_match('/<glpi>12\\.0<\\/glpi>/', $xml) === 1
@@ -75,6 +94,7 @@ $required = [
     'public/uibranding.js',
     'public/favicon.js',
     'scripts/test-upgrade-preservation.php',
+    'scripts/test-public-js.cjs',
     'resources/modifiers.ini',
     'resources/images/sample-ribbon-mark.svg',
     'resources/images/ASSET_README.md',
@@ -136,13 +156,13 @@ $expect(!is_file($root . '/composer.json') && !is_file($root . '/composer.lock')
 
 foreach (glob($root . '/locales/*.po') ?: [] as $poPath) {
     $po = file_get_contents($poPath) ?: '';
-    $expect(str_contains($po, 'Project-Id-Version: UI Branding 12.0.0'), basename($poPath) . ' has stale project metadata.');
+    $expect(str_contains($po, 'Project-Id-Version: UI Branding 12.0.1'), basename($poPath) . ' has stale project metadata.');
     $expect(!str_contains($po, 'ORGANIZATION') && !str_contains($po, 'EMAIL@ADDRESS'), basename($poPath) . ' contains placeholder metadata.');
     $moPath = substr($poPath, 0, -3) . '.mo';
     $expect(is_file($moPath), basename($moPath) . ' compiled catalog is missing.');
     if (is_file($moPath)) {
         $mo = file_get_contents($moPath) ?: '';
-        $expect(str_contains($mo, 'Project-Id-Version: UI Branding 12.0.0'), basename($moPath) . ' has stale compiled metadata.');
+        $expect(str_contains($mo, 'Project-Id-Version: UI Branding 12.0.1'), basename($moPath) . ' has stale compiled metadata.');
     }
 }
 
@@ -151,4 +171,4 @@ if ($errors !== []) {
     exit(1);
 }
 
-fwrite(STDOUT, "UI Branding 12.0.0 release metadata and package structure are valid.\n");
+fwrite(STDOUT, "UI Branding 12.0.1 release metadata and package structure are valid.\n");

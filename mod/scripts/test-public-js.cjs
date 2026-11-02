@@ -10,12 +10,14 @@ const pluginRoot = path.resolve(__dirname, '..');
 
 class FakeElement {
     constructor(tagName) {
+        this.style = Object.create(null);
         this.tagName = String(tagName || 'div').toUpperCase();
         this.attributes = Object.create(null);
         this.children = [];
         this.parentNode = null;
         this.listeners = Object.create(null);
         this.hidden = false;
+        this.textContent = '';
         this.className = '';
         this.alt = '';
         this.src = '';
@@ -99,20 +101,13 @@ function readPluginScript(name) {
     return fs.readFileSync(path.join(pluginRoot, 'public', name), 'utf8');
 }
 
-test('upload preview uses a temporary blob image and preserves the original image node', () => {
+test('upload selection displays a safe text-only state without DOM URL sinks', () => {
     const input = new FakeElement('input');
     input.setAttribute('data-mod-preview', 'preview_logo');
-
-    const container = new FakeElement('div');
-    const original = new FakeElement('img');
-    original.src = '/plugins/mod/UIBranding/Asset/logo_m?v=trusted';
-    original.className = 'img-fluid mod-preview-logo';
-    original.alt = 'Logo';
-    container.appendChild(original);
-
+    const preview = new FakeElement('div');
+    preview.hidden = true;
+    preview.style = Object.create(null);
     const documentListeners = Object.create(null);
-    const revoked = [];
-    let objectUrlNumber = 0;
     const document = {
         readyState: 'loading',
         addEventListener(name, callback) {
@@ -122,62 +117,42 @@ test('upload preview uses a temporary blob image and preserves the original imag
             return [input];
         },
         getElementById(id) {
-            return id === 'preview_logo' ? original : null;
-        },
-        createElement(tagName) {
-            return new FakeElement(tagName);
-        },
-    };
-    const URL = {
-        createObjectURL(file) {
-            objectUrlNumber += 1;
-            return 'blob:preview/' + objectUrlNumber + '/' + file.name;
-        },
-        revokeObjectURL(url) {
-            revoked.push(url);
+            return id === 'preview_logo' ? preview : null;
         },
     };
 
     runScript(readPluginScript('uibranding.js'), {
         document,
-        window: { addEventListener() {} },
-        URL,
         Map,
-        Array,
+        URL,
     });
     documentListeners.DOMContentLoaded();
 
     input.files = [{ name: 'logo-new.png' }];
     input.dispatch('change');
 
-    assert.equal(original.hidden, true);
-    assert.equal(original.src, '/plugins/mod/UIBranding/Asset/logo_m?v=trusted');
-    assert.equal(container.children.length, 2);
-    const temporary = container.children[1];
-    assert.equal(temporary.tagName, 'IMG');
-    assert.equal(temporary.src, 'blob:preview/1/logo-new.png');
-    assert.equal(temporary.className, original.className);
-    assert.equal(temporary.alt, original.alt);
+    assert.equal(preview.hidden, false);
+    assert.equal(preview.style.backgroundImage, 'none');
+    assert.equal(preview.style.backgroundColor, 'var(--tblr-bg-surface-secondary)');
+    assert.equal(preview.getAttribute('aria-label'), 'logo-new.png');
+    assert.equal(preview.textContent, 'logo-new.png');
+    assert.equal(preview.src, '');
+    assert.equal(preview.getAttribute('src'), null);
 
     input.files = [];
     input.dispatch('change');
 
-    assert.equal(original.hidden, false);
-    assert.equal(container.children.length, 1);
-    assert.equal(container.children[0], original);
-    assert.deepEqual(revoked, ['blob:preview/1/logo-new.png']);
+    assert.equal(preview.hidden, true);
+    assert.equal(preview.style.backgroundImage, 'none');
+    assert.equal(preview.getAttribute('aria-label'), null);
+    assert.equal(preview.textContent, '');
 });
 
-test('replacing a selected file revokes the previous blob preview', () => {
+test('selected filenames are rendered as literal text, never interpreted as HTML', () => {
     const input = new FakeElement('input');
-    input.setAttribute('data-mod-preview', 'preview_background');
-    const container = new FakeElement('div');
-    const original = new FakeElement('img');
-    container.appendChild(original);
-
+    input.setAttribute('data-mod-preview', 'preview_logo');
+    const preview = new FakeElement('div');
     const documentListeners = Object.create(null);
-    const revoked = [];
-    let counter = 0;
     const document = {
         readyState: 'loading',
         addEventListener(name, callback) {
@@ -186,40 +161,56 @@ test('replacing a selected file revokes the previous blob preview', () => {
         querySelectorAll() {
             return [input];
         },
-        getElementById() {
-            return original;
-        },
-        createElement(tagName) {
-            return new FakeElement(tagName);
-        },
-    };
-    const URL = {
-        createObjectURL(file) {
-            counter += 1;
-            return 'blob:preview/' + counter + '/' + file.name;
-        },
-        revokeObjectURL(url) {
-            revoked.push(url);
+        getElementById(id) {
+            return id === 'preview_logo' ? preview : null;
         },
     };
 
-    runScript(readPluginScript('uibranding.js'), {
-        document,
-        window: { addEventListener() {} },
-        URL,
-        Map,
-        Array,
-    });
+    runScript(readPluginScript('uibranding.js'), { document });
     documentListeners.DOMContentLoaded();
 
-    input.files = [{ name: 'first.jpg' }];
-    input.dispatch('change');
-    input.files = [{ name: 'second.jpg' }];
+    const hostileFilename = '<img src=x onerror=alert(1)> & "quoted".png';
+    input.files = [{ name: hostileFilename }];
     input.dispatch('change');
 
-    assert.equal(container.children.length, 2);
-    assert.equal(container.children[1].src, 'blob:preview/2/second.jpg');
-    assert.deepEqual(revoked, ['blob:preview/1/first.jpg']);
+    assert.equal(preview.hidden, false);
+    assert.equal(preview.textContent, hostileFilename);
+    assert.equal(preview.getAttribute('aria-label'), hostileFilename);
+    assert.equal(preview.children.length, 0);
+    assert.equal(preview.getAttribute('src'), null);
+});
+
+test('public preview script never creates elements or assigns src/href', () => {
+    const source = readPluginScript('uibranding.js');
+    assert.doesNotMatch(source, /createElement\s*\(/);
+    assert.doesNotMatch(source, /\.(?:src|href)\s*=/);
+    assert.doesNotMatch(source, /setAttribute\s*\(\s*['"](?:src|href)['"]/i);
+    assert.doesNotMatch(source, /innerHTML|outerHTML|insertAdjacentHTML/i);
+});
+
+test('favicon script does not create URL-bearing DOM elements or copy href values', () => {
+    const source = readPluginScript('favicon.js');
+    assert.doesNotMatch(source, /createElement\s*\(/);
+    assert.doesNotMatch(source, /\.(?:src|href)\s*=/);
+    assert.doesNotMatch(source, /setAttribute\s*\(\s*['"]href['"]/i);
+    assert.doesNotMatch(source, /innerHTML|outerHTML|insertAdjacentHTML/i);
+});
+
+test('preview containers remain hidden when no file is selected', () => {
+    const template = fs.readFileSync(path.join(pluginRoot, 'templates', 'uibranding.html.twig'), 'utf8');
+
+    assert.match(
+        template,
+        /\.mod-preview-background\[hidden\],\s*\.mod-preview-logo\[hidden\],\s*\.mod-preview-favicon\[hidden\]\s*\{\s*display:\s*none\s*!important;/s
+    );
+});
+
+test('release workflow gates publication on the exact numeric tag', () => {
+    const workflow = fs.readFileSync(path.resolve(pluginRoot, '..', '.github', 'workflows', 'ci.yml'), 'utf8');
+
+    assert.match(workflow, /if: github\.ref == 'refs\/tags\/12\.0\.1'/);
+    assert.doesNotMatch(workflow, /startsWith\(github\.ref/);
+    assert.doesNotMatch(workflow, /v12\.0\.1/);
 });
 
 test('favicon logic reuses the trusted server-rendered link and removes native duplicates', () => {

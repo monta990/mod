@@ -6,7 +6,7 @@ on:
       - main
       - "release/**"
     tags:
-      - "v12.0.0"
+      - "12.0.1"
   pull_request:
   workflow_dispatch:
 
@@ -77,11 +77,12 @@ jobs:
       - name: Verify repository layout
         run: |
           test -d mod
-          unexpected="$(find . -maxdepth 1 -mindepth 1 ! -name '.github' ! -name '.git' ! -name 'mod' ! -name 'README.md' ! -name 'LICENSE' ! -name 'CHANGELOG.md' -print)"
+          unexpected="$(find . -maxdepth 1 -mindepth 1 ! -name '.github' ! -name '.git' ! -name 'mod' ! -name 'README.md' ! -name 'LICENSE' ! -name 'CHANGELOG.md' ! -name 'RELEASE.md' -print)"
           test -z "$unexpected"
           test -f README.md
           test -f LICENSE
           test -f CHANGELOG.md
+          test -f RELEASE.md
           cmp LICENSE mod/LICENSE.txt
 
       - name: PHP syntax
@@ -115,22 +116,22 @@ jobs:
       - name: Build release ZIP
         run: |
           bash mod/scripts/package.sh dist
-          test -f dist/mod-12.0.0.zip
-          test "$(unzip -Z1 dist/mod-12.0.0.zip | grep -c '^mod/')" -gt 0
-          ! unzip -Z1 dist/mod-12.0.0.zip | grep -q '^mod/scripts/'
-          ! unzip -Z1 dist/mod-12.0.0.zip | grep -q '^mod/\.git'
+          test -f dist/mod-12.0.1.zip
+          test "$(unzip -Z1 dist/mod-12.0.1.zip | grep -c '^mod/')" -gt 0
+          ! unzip -Z1 dist/mod-12.0.1.zip | grep -q '^mod/scripts/'
+          ! unzip -Z1 dist/mod-12.0.1.zip | grep -q '^mod/\.git'
 
       - name: Upload release ZIP artifact
         if: matrix.php == '8.3' && !matrix.experimental
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: ui-branding-12.0.0
-          path: dist/mod-12.0.0.zip
+          name: ui-branding-12.0.1
+          path: dist/mod-12.0.1.zip
           if-no-files-found: error
           retention-days: 14
 
   release:
-    if: startsWith(github.ref, 'refs/tags/v12.0.0')
+    if: github.ref == 'refs/tags/12.0.1'
     needs: validate
     runs-on: ubuntu-latest
     permissions:
@@ -182,7 +183,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "$GITHUB_REF_NAME" dist/mod-12.0.0.zip \
-            --title "UI Branding 12.0.0" \
+          gh release create "$GITHUB_REF_NAME" dist/mod-12.0.1.zip \
+            --title "UI Branding 12.0.1" \
             --generate-notes \
             --verify-tag

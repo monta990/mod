@@ -1,80 +1,61 @@
 (function () {
     'use strict';
 
-    var previewStates = new Map();
-
-    function clearPreview(input) {
-        var state = previewStates.get(input);
-        if (!state) {
+    function clearPreview(input, preview) {
+        if (!input || !preview) {
             return;
         }
 
-        if (state.preview && state.preview.parentNode) {
-            state.preview.parentNode.removeChild(state.preview);
-        }
-
-        state.originalPreview.hidden = state.wasHidden;
-        URL.revokeObjectURL(state.objectUrl);
-        previewStates.delete(input);
+        preview.hidden = true;
+        preview.textContent = '';
+        preview.style.backgroundImage = 'none';
+        preview.style.backgroundColor = '';
+        preview.removeAttribute('aria-label');
     }
 
     function updatePreview(input) {
         if (!input || !input.files || input.files.length === 0) {
-            clearPreview(input);
+            clearPreview(input, input && document.getElementById(input.getAttribute('data-mod-preview')));
             return;
         }
 
-        var file = input.files[0];
         var previewId = input.getAttribute('data-mod-preview');
         if (!previewId) {
             return;
         }
 
-        var originalPreview = document.getElementById(previewId);
-        if (!originalPreview || originalPreview.tagName !== 'IMG' || !originalPreview.parentNode) {
+        var preview = document.getElementById(previewId);
+        if (!preview) {
             return;
         }
 
-        clearPreview(input);
+        var file = input.files[0];
+        if (!file || typeof file.name !== 'string') {
+            clearPreview(input, preview);
+            return;
+        }
 
-        var objectUrl = URL.createObjectURL(file);
-        var temporaryPreview = document.createElement('img');
-        temporaryPreview.className = originalPreview.className;
-        temporaryPreview.alt = originalPreview.alt;
-        temporaryPreview.src = objectUrl;
-
-        var wasHidden = originalPreview.hidden;
-        originalPreview.hidden = true;
-        originalPreview.parentNode.insertBefore(temporaryPreview, originalPreview.nextSibling);
-
-        previewStates.set(input, {
-            originalPreview: originalPreview,
-            preview: temporaryPreview,
-            wasHidden: wasHidden,
-            objectUrl: objectUrl,
-        });
-    }
-
-    function restorePreview(input) {
-        clearPreview(input);
-    }
-
-    function clearAllPreviews() {
-        Array.from(previewStates.keys()).forEach(clearPreview);
+        // Use textContent only: filenames are untrusted text and must never be
+        // parsed as HTML or assigned to a URL-bearing DOM attribute.
+        preview.textContent = file.name;
+        preview.hidden = false;
+        preview.style.backgroundImage = 'none';
+        preview.style.backgroundColor = 'var(--tblr-bg-surface-secondary)';
+        preview.setAttribute('aria-label', file.name);
     }
 
     function initFilePreviews() {
         document.querySelectorAll('input[type="file"][data-mod-preview]').forEach(function (input) {
+            var previewId = input.getAttribute('data-mod-preview');
+            var preview = previewId ? document.getElementById(previewId) : null;
+            if (preview) {
+                preview.hidden = true;
+            }
+
             input.addEventListener('change', function () {
-                if (input.files && input.files.length > 0) {
-                    updatePreview(input);
-                } else {
-                    restorePreview(input);
-                }
+                updatePreview(input);
             });
         });
-
-        window.addEventListener('pagehide', clearAllPreviews, { once: true });
     }
 
     if (document.readyState === 'loading') {
