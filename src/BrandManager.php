@@ -79,14 +79,6 @@ final class BrandManager
             'max_size'       => 2 * 1024 * 1024,
             'min_dimensions' => null,
         ],
-        'logo_s_grey' => [
-            'filename'       => 'logo-G-100-grey.png',
-            'default'        => 'logo-G-100-grey.png',
-            'extensions'     => ['png'],
-            'mime'            => 'image/png',
-            'max_size'       => 2 * 1024 * 1024,
-            'min_dimensions' => null,
-        ],
         'logo_s_white' => [
             'filename'       => 'logo-G-100-white.png',
             'default'        => 'logo-G-100-white.png',
@@ -103,14 +95,6 @@ final class BrandManager
             'max_size'       => 2 * 1024 * 1024,
             'min_dimensions' => null,
         ],
-        'logo_m_grey' => [
-            'filename'       => 'logo-GLPI-100-grey.png',
-            'default'        => 'logo-GLPI-100-grey.png',
-            'extensions'     => ['png'],
-            'mime'            => 'image/png',
-            'max_size'       => 2 * 1024 * 1024,
-            'min_dimensions' => null,
-        ],
         'logo_m_white' => [
             'filename'       => 'logo-GLPI-100-white.png',
             'default'        => 'logo-GLPI-100-white.png',
@@ -122,14 +106,6 @@ final class BrandManager
         'logo_l_black' => [
             'filename'       => 'logo-GLPI-250-black.png',
             'default'        => 'logo-GLPI-250-black.png',
-            'extensions'     => ['png'],
-            'mime'            => 'image/png',
-            'max_size'       => 2 * 1024 * 1024,
-            'min_dimensions' => null,
-        ],
-        'logo_l_grey' => [
-            'filename'       => 'logo-GLPI-250-grey.png',
-            'default'        => 'logo-GLPI-250-grey.png',
             'extensions'     => ['png'],
             'mime'            => 'image/png',
             'max_size'       => 2 * 1024 * 1024,
