@@ -128,7 +128,7 @@ final class BrandManager
             throw new \RuntimeException('Unable to resolve the UI Branding plugin directory.');
         }
 
-        return rtrim($pluginDir, '/') . '/resources/images';
+        return rtrim($pluginDir, '/') . '/resources/imagenes';
     }
 
     private static function getResourceRootDir(): string
