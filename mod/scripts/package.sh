@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "\${BASH_SOURCE[0]}")/.." && pwd)"
-DIST="\${1:-$ROOT/../dist}"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+DIST="${1:-$ROOT/../dist}"
 mkdir -p "$DIST"
 DIST="$(cd "$DIST" && pwd)"
 WORK="$DIST/package"
@@ -22,7 +22,7 @@ if ! command -v msgfmt >/dev/null 2>&1; then
     exit 1
 fi
 for po in "$PACKAGE_ROOT"/locales/*.po; do
-    msgfmt --check --check-format -o "\${po%.po}.mo" "$po"
+    msgfmt --check --check-format -o "${po%.po}.mo" "$po"
 done
 
 # The SVG is a source/build asset. Use it to generate the PNG/ICO files, then
