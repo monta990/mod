@@ -653,7 +653,7 @@ final class BrandManager
 
         $exact = $definition['exact_dimensions'] ?? null;
         if ($exact !== null && ($width !== $exact[0] || $height !== $exact[1])) {
-            throw new \\RuntimeException(sprintf(
+            throw new \RuntimeException(sprintf(
                 'The "%1$s" image must be exactly %2$dx%3$d pixels.',
                 $resourceName,
                 $exact[0],
