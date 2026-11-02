@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<psalm
+    errorLevel="4"
+    runTaintAnalysis="true"
+    resolveFromConfigFile="false"
+    findUnusedCode="false"
+>
+    <projectFiles>
+        <directory name="plugins/mod/src" />
+        <file name="plugins/mod/setup.php" />
+        <file name="plugins/mod/hook.php" />
+    </projectFiles>
+</psalm>

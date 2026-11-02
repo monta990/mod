@@ -8,13 +8,19 @@ on:
     tags:
       - "v12.0.0"
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: ui-branding-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -33,10 +39,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: "3.12"
 
@@ -55,7 +63,7 @@ jobs:
           sudo apt-get install -y gettext
 
       - name: Set up PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
         with:
           php-version: ${{ matrix.php }}
           extensions: fileinfo, mbstring
@@ -102,7 +110,7 @@ jobs:
 
       - name: Upload release ZIP artifact
         if: matrix.php == '8.3' && !matrix.experimental
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: ui-branding-12.0.0
           path: dist/mod-12.0.0.zip
@@ -117,10 +125,12 @@ jobs:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: "3.12"
 
@@ -139,7 +149,7 @@ jobs:
           sudo apt-get install -y gettext
 
       - name: Set up PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
         with:
           php-version: "8.3"
           extensions: fileinfo, mbstring
@@ -155,8 +165,10 @@ jobs:
         run: bash mod/scripts/package.sh dist
 
       - name: Publish ZIP
-        uses: softprops/action-gh-release@v2
-        with:
-          name: UI Branding 12.0.0
-          files: dist/mod-12.0.0.zip
-          generate_release_notes: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/mod-12.0.0.zip \
+            --title "UI Branding 12.0.0" \
+            --generate-notes \
+            --verify-tag

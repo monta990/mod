@@ -1,0 +1,173 @@
+name: Security Analysis
+
+on:
+  push:
+    branches:
+      - main
+      - "release/**"
+      - "security/**"
+    tags:
+      - "v*"
+  pull_request:
+  schedule:
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-analysis-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  codeql:
+    name: CodeQL - ${{ matrix.language }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language:
+          - php
+          - javascript-typescript
+          - python
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+          queries: security-extended
+
+      - name: Analyze with CodeQL
+        uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          category: "/language:${{ matrix.language }}"
+
+  glpi-static-analysis:
+    name: GLPI-aware PHP and Twig analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout UI Branding
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Checkout GLPI 12.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: glpi-project/glpi
+          ref: 12.0/bugfixes
+          path: glpi
+          persist-credentials: false
+
+      - name: Set up PHP and Composer
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          php-version: "8.5"
+          extensions: bcmath, curl, dom, gd, intl, mbstring, mysqli, xml, zip
+          tools: composer:v2
+          coverage: none
+
+      - name: Install GLPI development analysis tools
+        working-directory: glpi
+        run: |
+          composer install \
+            --no-interaction \
+            --prefer-dist \
+            --no-progress \
+            --ignore-platform-req=php+ \
+            --no-scripts
+
+      - name: Prepare plugin analysis workspace
+        run: |
+          mkdir -p glpi/plugins
+          cp -a mod glpi/plugins/mod
+          cp .github/phpstan-mod.neon glpi/phpstan-mod.neon
+
+      - name: PHP lint with deprecated syntax detection
+        working-directory: glpi
+        run: |
+          vendor/bin/parallel-lint \
+            --show-deprecated \
+            --colors \
+            plugins/mod/setup.php \
+            plugins/mod/hook.php \
+            plugins/mod/src
+
+      - name: Twig lint using GLPI rules
+        working-directory: glpi
+        run: |
+          vendor/bin/twigcs \
+            --ansi \
+            --no-interaction \
+            --ruleset='Glpi\\Tools\\GlpiTwigRuleset' \
+            plugins/mod/templates
+
+      - name: PHPStan with GLPI extensions
+        working-directory: glpi
+        run: |
+          vendor/bin/phpstan analyse \
+            --configuration=phpstan-mod.neon \
+            --no-progress \
+            --error-format=github \
+            --memory-limit=1G
+
+      - name: Psalm security and taint analysis
+        working-directory: glpi
+        run: |
+          vendor/bin/psalm \
+            --config="$GITHUB_WORKSPACE/.github/psalm-mod.xml" \
+            --long-progress \
+            --output-format=github
+
+  gitleaks:
+    name: Detect exposed secrets
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Scan repository history for secrets
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: "false"
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"
+
+  workflow-audit:
+    name: Audit GitHub Actions workflows
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Audit workflows with zizmor
+        uses: zizmorcore/zizmor-action@53290badfa369cb0bf7ad16342cb62c2fa47ac7b # v0.8.0
+        with:
+          inputs: .github/workflows
+          advanced-security: false
+          annotations: true
+          persona: regular
+          min-severity: medium
+          min-confidence: medium
