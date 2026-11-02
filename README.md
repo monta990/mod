@@ -1,39 +1,62 @@
 # UI Branding 12.0.0
 
-Visual customization plugin for GLPI 12.
+UI Branding customizes the GLPI 12 interface without modifying GLPI core files.
 
 ## Features
 
 - Custom application title.
-- Login screen background.
-- Standard and theme-specific logos.
+- Optional login-page background.
+- Standard logos for the expanded menu, collapsed menu and login page.
+- Theme-aware logos using GLPI's native light/dark logo variables.
 - Custom favicon.
-- Resource preview for administrators.
-- GLPI cache clearing from the configuration page.
-- Resources served through GLPI Controllers.
+- Live image previews on the configuration page.
+- Administrator-only configuration and cache-clearing controls.
+- Public branding assets served through allowlisted GLPI Controllers.
+- SHA-256 content fingerprints and HTTP validators for browser caching.
 
-## Architecture
+## Compatibility
 
-Version 12.0.44 applies branding **at runtime through hooks and Controllers**, using targeted GLPI 12 logo selectors without replacing files in GLPI `public/pics`.
-
-Administrator-uploaded resources are stored under `GLPI_PLUGIN_DOC_DIR/mod/uploads` and served through plugin routes. Bundled default resources remain inside the installed plugin under `resources/images` and are resolved using GLPI's plugin path API; they are never copied into persistent plugin data. Logos and login branding are applied by runtime CSS/JavaScript loaded through GLPI plugin asset hooks. The favicon is updated by the same runtime asset script.
-
-There are no `front/` or `ajax/` entry points, and the plugin does not include `composer.json`, `composer.lock`, or its own `vendor/` directory.
-
-This version is a **clean architecture and configuration break**. It does not read, migrate, or restore configuration, images, backups, or state from previous plugin generations. An installation coming from an earlier version starts with this version's defaults and must be configured again.
-
-## Requirements
-
-- GLPI 12.0.x
-- PHP 8.2 or newer
-- Composer is not required.
+- GLPI 12.0.x, from 12.0.0 up to (but not including) 12.1.0.
+- PHP 8.2 or newer.
+- No Composer installation or plugin-local `vendor/` directory is required.
 
 ## Installation
 
-The distributed ZIP must contain a top-level `mod/` directory. In GLPI, install the ZIP from **Setup → Plugins**, then install and enable **UI Branding**.
+The release ZIP must contain a top-level `mod/` directory.
 
-## Security
+1. Upload the ZIP from **Setup → Plugins**.
+2. Install and enable **UI Branding**.
+3. Open its configuration page and set the title, logos, favicon and optional login background.
+4. Save the settings. Clear the GLPI cache only when needed; the branding CSS and image URLs are content-versioned.
 
-Public resource routes only allow known, internally mapped resource keys. Administrative configuration changes require the `config` / `UPDATE` right. Public asset routes expose only the plugin's allowlisted branding resources. Write operations are protected by GLPI's native CSRF mechanism for Controllers.
+## Architecture
 
-Uploaded files are validated by extension, actual MIME type, size, and minimum dimensions for the background.
+Branding is applied at runtime through GLPI plugin hooks and Symfony Controllers. The plugin does not overwrite files in GLPI's `public/pics` directory and does not introduce legacy `front/` or `ajax/` entry points.
+
+Administrator settings and uploaded files are stored under:
+
+`GLPI_PLUGIN_DOC_DIR/mod/`
+
+Uploaded resources are stored in `uploads/`. Bundled fallback images remain in the installed plugin under `resources/images/`; they are not copied to persistent storage. Asset routes expose only the resource identifiers declared by the plugin.
+
+The configuration Controller requires the GLPI `config` right with `UPDATE`. GLPI 12 applies its built-in origin-based CSRF protection to unsafe Controller requests; the plugin does not implement a separate token mechanism.
+
+## Logo behavior
+
+When theme-aware logos are enabled, the plugin supplies GLPI's native variables:
+
+- `--glpi-logo-light` and `--glpi-logo-light-reduced` for white expanded/collapsed navigation logos.
+- `--glpi-logo-dark` and `--glpi-logo-dark-reduced` for black expanded/collapsed navigation logos.
+- `--glpi-logo-dark-login` and `--glpi-logo-light-login` for the login logo in the corresponding GLPI palette.
+
+This keeps the expanded/collapsed menu and login behavior aligned with GLPI's own theme implementation instead of targeting internal logo elements directly. Legacy gray theme-logo uploads are left untouched in persistent storage but are not selected by the GLPI 12 light/dark palette mapping.
+
+## Data and uninstall
+
+The plugin does not migrate settings from unrelated earlier plugin generations. Its current settings and uploads remain in `GLPI_PLUGIN_DOC_DIR/mod/` when the plugin is upgraded.
+
+Uninstalling the plugin removes this plugin-owned data directory, including uploaded images and settings. Back up that directory before uninstalling if the branding configuration must be retained.
+
+## Release validation
+
+See [TESTING.md](TESTING.md) for the GLPI 12.0.0/12.0.1 manual test matrix and release checks.

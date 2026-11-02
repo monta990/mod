@@ -11,21 +11,33 @@ if (!defined('GLPI_ROOT')) {
 final class UIBranding
 {
     private const THEME_LOGO_RESOURCES = [
-        'logo_s_black', 'logo_s_grey', 'logo_s_white',
-        'logo_m_black', 'logo_m_grey', 'logo_m_white',
-        'logo_l_black', 'logo_l_grey', 'logo_l_white',
+        'logo_s_white',
+        'logo_s_black',
+        'logo_m_white',
+        'logo_m_black',
+        'logo_l_black',
+        'logo_l_white',
     ];
 
-    private const BASE_LOGO_RESOURCES = ['logo_s', 'logo_m', 'logo_l'];
+    private const BASE_LOGO_RESOURCES = [
+        'logo_s',
+        'logo_m',
+        'logo_l',
+    ];
 
     public function save(array $data, array $files): void
     {
         $manager = new BrandManager();
         $config = BrandManager::getConfiguration();
+        $pendingUploads = [];
 
-        $uploadedResources = [];
-
-        foreach (array_merge(['background', 'favicon'], self::BASE_LOGO_RESOURCES, self::THEME_LOGO_RESOURCES) as $resource) {
+        foreach (
+            array_merge(
+                ['background', 'favicon'],
+                self::BASE_LOGO_RESOURCES,
+                self::THEME_LOGO_RESOURCES,
+            ) as $resource
+        ) {
             if (!isset($files[$resource]) || !$files[$resource] instanceof UploadedFile) {
                 continue;
             }
@@ -36,23 +48,24 @@ final class UIBranding
                 continue;
             }
 
-            $manager->uploadResource($resource, $file);
-            $uploadedResources[] = $resource;
+            $pendingUploads[$resource] = $file;
         }
 
         $newConfig = [
             'title'       => $data['title'] ?? $config['title'],
-            'login'       => $data['show_background'] ?? '0',
-            'theme_logos' => $data['use_theme_logos'] ?? '0',
-            'show_logos'  => $data['show_custom_logos'] ?? '0',
-            'favicon'     => $data['show_custom_favicon'] ?? '0',
+            'login'       => $data['show_background'] ?? $config['login'],
+            'theme_logos' => $data['use_theme_logos'] ?? $config['theme_logos'],
+            'show_logos'  => $data['show_custom_logos'] ?? $config['show_logos'],
+            'favicon'     => $data['show_custom_favicon'] ?? $config['favicon'],
         ];
 
-        $manager->setConfiguration(array_merge($config, $newConfig));
+        // Validate and stage every selected upload before replacing any current
+        // resource or writing the new settings.
+        $manager->saveConfiguration($newConfig, $pendingUploads);
 
-        // Keep this variable updated for the remainder of the current request.
         global $CFG_GLPI;
-        $CFG_GLPI['app_name'] = BrandManager::getCurrentTitle();
+        $title = BrandManager::getCurrentTitle();
+        $CFG_GLPI['app_name'] = $title !== '' ? $title : 'GLPI';
     }
 
     public function getViewData(string $url, string $previewUrl): array
@@ -73,14 +86,11 @@ final class UIBranding
                 ['name' => 'logo_l', 'label' => __('Large Logo', 'mod'), 'size' => '250x138'],
             ],
             'theme_logos'         => [
-                ['name' => 'logo_s_black', 'label' => __('Small Logo (black)', 'mod'), 'size' => '53x53'],
-                ['name' => 'logo_s_grey', 'label' => __('Small Logo (grey)', 'mod'), 'size' => '53x53'],
                 ['name' => 'logo_s_white', 'label' => __('Small Logo (white)', 'mod'), 'size' => '53x53'],
-                ['name' => 'logo_m_black', 'label' => __('Medium Logo (black)', 'mod'), 'size' => '100x55'],
-                ['name' => 'logo_m_grey', 'label' => __('Medium Logo (grey)', 'mod'), 'size' => '100x55'],
+                ['name' => 'logo_s_black', 'label' => __('Small Logo (black)', 'mod'), 'size' => '53x53'],
                 ['name' => 'logo_m_white', 'label' => __('Medium Logo (white)', 'mod'), 'size' => '100x55'],
+                ['name' => 'logo_m_black', 'label' => __('Medium Logo (black)', 'mod'), 'size' => '100x55'],
                 ['name' => 'logo_l_black', 'label' => __('Large Logo (black)', 'mod'), 'size' => '250x138'],
-                ['name' => 'logo_l_grey', 'label' => __('Large Logo (grey)', 'mod'), 'size' => '250x138'],
                 ['name' => 'logo_l_white', 'label' => __('Large Logo (white)', 'mod'), 'size' => '250x138'],
             ],
         ];

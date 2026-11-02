@@ -3,8 +3,8 @@
 /**
  * UI Branding plugin for GLPI 12.
  *
- * @copyright Copyright (C) 2026 by i-Vertix/PGUM.
- * @license GPLv3
+ * @copyright Copyright (C) 2026 by Edwin Elias Alvarez.
+ * @license GPL-3.0-or-later
  */
 
 namespace GlpiPlugin\Mod\Controller;
@@ -13,6 +13,7 @@ use Glpi\Controller\AbstractController;
 use Glpi\Http\Firewall;
 use Glpi\Security\Attribute\SecurityStrategy;
 use GlpiPlugin\Mod\BrandManager;
+use GlpiPlugin\Mod\Paths;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -24,8 +25,7 @@ final class BrandingCssController extends AbstractController
     public function __invoke(Request $request): Response
     {
         $config = BrandManager::getConfiguration();
-        $basePath = rtrim(dirname($request->getPathInfo()), '/');
-        $assetBase = $basePath . '/Asset/';
+        $assetBase = Paths::getControllerUrl('UIBranding/Asset') . '/';
 
         $assetUrl = static function (string $name) use ($assetBase): string {
             return $assetBase . rawurlencode($name) . '?v='
@@ -36,32 +36,32 @@ final class BrandingCssController extends AbstractController
 
         if ($config['show_logos'] === '1') {
             if ($config['theme_logos'] === '1') {
-                $lightMedium = $assetUrl('logo_m_white');
-                $darkMedium = $assetUrl('logo_m_black');
-                $lightSmall = $assetUrl('logo_s_white');
-                $darkSmall = $assetUrl('logo_s_black');
-                $lightLarge = $assetUrl('logo_l_white');
-                $darkLarge = $assetUrl('logo_l_black');
-
-                // The plugin stylesheet is injected before GLPI core CSS, so use
-                // !important on the runtime branding rules. This keeps the custom
-                // assets effective without changing GLPI core files, while still
-                // respecting the native collapsed sidebar state.
-                $rules[] = '.page .glpi-logo{background-image:url("' . $lightMedium . '") !important;background-repeat:no-repeat !important;background-size:contain !important;}';
-                $rules[] = '[data-glpi-theme-dark="1"] .page .glpi-logo{background-image:url("' . $darkMedium . '") !important;}';
-                $rules[] = 'body.navbar-collapsed .navbar-vertical .glpi-logo,body.navbar-collapsed .global-menu .glpi-logo{background-image:url("' . $lightSmall . '") !important;background-repeat:no-repeat !important;background-size:contain !important;}';
-                $rules[] = '[data-glpi-theme-dark="1"] body.navbar-collapsed .navbar-vertical .glpi-logo,[data-glpi-theme-dark="1"] body.navbar-collapsed .global-menu .glpi-logo{background-image:url("' . $darkSmall . '") !important;}';
-                $rules[] = '.page-anonymous .glpi-logo{content:url("' . $lightLarge . '") !important;}';
-                $rules[] = '[data-glpi-theme-dark="1"] .page-anonymous .glpi-logo{content:url("' . $darkLarge . '") !important;}';
+                $logoLight = $assetUrl('logo_m_white');
+                $logoLightReduced = $assetUrl('logo_s_white');
+                $logoDark = $assetUrl('logo_m_black');
+                $logoDarkReduced = $assetUrl('logo_s_black');
+                $logoDarkLogin = $assetUrl('logo_l_black');
+                $logoLightLogin = $assetUrl('logo_l_white');
             } else {
-                $medium = $assetUrl('logo_m');
-                $small = $assetUrl('logo_s');
-                $large = $assetUrl('logo_l');
-
-                $rules[] = '.page .glpi-logo{background-image:url("' . $medium . '") !important;background-repeat:no-repeat !important;background-size:contain !important;}';
-                $rules[] = 'body.navbar-collapsed .navbar-vertical .glpi-logo,body.navbar-collapsed .global-menu .glpi-logo{background-image:url("' . $small . '") !important;background-repeat:no-repeat !important;background-size:contain !important;}';
-                $rules[] = '.page-anonymous .glpi-logo{content:url("' . $large . '") !important;}';
+                $logoLight = $assetUrl('logo_m');
+                $logoLightReduced = $assetUrl('logo_s');
+                $logoDark = $logoLight;
+                $logoDarkReduced = $logoLightReduced;
+                $logoDarkLogin = $assetUrl('logo_l');
+                $logoLightLogin = $logoDarkLogin;
             }
+
+            // Override GLPI's native variables instead of replacing logo elements.
+            // This preserves GLPI's expanded/collapsed menu and login-page behavior.
+            // !important is intentional: GLPI core styles are loaded after plugin header tags.
+            $rules[] = ':root{'
+                . '--glpi-logo-light:url("' . $logoLight . '") !important;'
+                . '--glpi-logo-light-reduced:url("' . $logoLightReduced . '") !important;'
+                . '--glpi-logo-dark:url("' . $logoDark . '") !important;'
+                . '--glpi-logo-dark-reduced:url("' . $logoDarkReduced . '") !important;'
+                . '--glpi-logo-dark-login:url("' . $logoDarkLogin . '") !important;'
+                . '--glpi-logo-light-login:url("' . $logoLightLogin . '") !important;'
+                . '}';
         }
 
         if ($config['login'] === '1') {
@@ -72,14 +72,21 @@ final class BrandingCssController extends AbstractController
         }
 
         $content = implode("\n", $rules) . "\n";
-        $etag = '"' . hash('sha256', $content) . '"';
         $response = new Response($content, Response::HTTP_OK, [
             'Content-Type' => 'text/css; charset=UTF-8',
-            'Cache-Control' => 'public, max-age=31536000, immutable',
-            'ETag' => $etag,
+            'X-Content-Type-Options' => 'nosniff',
         ]);
+
+        $response->setEtag(hash('sha256', $content));
+        $response->setPublic();
+        $response->setMaxAge(31536000);
+        $response->setSharedMaxAge(31536000);
+        $response->headers->set('Cache-Control', 'public, max-age=31536000, s-maxage=31536000, immutable');
+
+        if ($response->isNotModified($request)) {
+            return $response;
+        }
 
         return $response;
     }
-
 }

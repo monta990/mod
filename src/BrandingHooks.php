@@ -15,31 +15,29 @@ final class BrandingHooks
     {
         global $PLUGIN_HOOKS, $CFG_GLPI;
 
-        // The branding stylesheet is served dynamically by a public Controller.
-        // The URL is content-versioned so browsers can keep the stylesheet in
-        // cache across normal GLPI navigation and fetch it again only when the
-        // branding configuration, resources, or plugin version changes.
-        $cssUrl = Paths::getBrandingCssUrl(BrandManager::getBrandingCssFingerprint());
-
         $headerTags = [];
+        $hasCssBranding = BrandManager::isAnyLogoModified()
+            || BrandManager::isLoginPageModified();
 
-        // Preload only the logo assets that can be used by the current page.
-        // Place these hints before the stylesheet so the browser can start
-        // fetching the image as early as possible.
         if (BrandManager::isAnyLogoModified()) {
             $headerTags = self::getLogoPreloadTags();
         }
 
-        $headerTags[] = [
-            'tag' => 'link',
-            'properties' => [
-                'rel'  => 'stylesheet',
-                'type' => 'text/css',
-                'href' => $cssUrl,
-            ],
-        ];
+        // Avoid an extra stylesheet request when only the application title or
+        // favicon is customized.
+        if ($hasCssBranding) {
+            $headerTags[] = [
+                'tag' => 'link',
+                'properties' => [
+                    'rel'  => 'stylesheet',
+                    'type' => 'text/css',
+                    'href' => Paths::getBrandingCssUrl(BrandManager::getBrandingCssFingerprint()),
+                ],
+            ];
+        }
 
-        if (BrandManager::isFaviconEnabled()) {
+        $faviconEnabled = BrandManager::isFaviconEnabled();
+        if ($faviconEnabled) {
             $faviconUrl = Paths::getAssetUrl(
                 'favicon',
                 BrandManager::getResourceFingerprint('favicon'),
@@ -47,10 +45,10 @@ final class BrandingHooks
             $headerTags[] = [
                 'tag' => 'link',
                 'properties' => [
-                    'rel'      => 'icon',
-                    'type'     => 'image/x-icon',
-                    'sizes'    => '16x16',
-                    'href'     => $faviconUrl,
+                    'rel'              => 'icon',
+                    'type'             => 'image/x-icon',
+                    'sizes'            => '16x16',
+                    'href'             => $faviconUrl,
                     'data-mod-favicon' => '1',
                 ],
             ];
@@ -59,14 +57,18 @@ final class BrandingHooks
         $PLUGIN_HOOKS[Hooks::ADD_HEADER_TAG]['mod'] = $headerTags;
         $PLUGIN_HOOKS[Hooks::ADD_HEADER_TAG_ANONYMOUS_PAGE]['mod'] = $headerTags;
 
-        // Live previews are required on the configuration page regardless of
-        // whether the custom favicon feature is enabled.
+        // The image preview helper is only useful on authenticated plugin pages.
         $javascript = ['uibranding.js'];
-        if (BrandManager::isFaviconEnabled()) {
+        if ($faviconEnabled) {
             $javascript[] = 'favicon.js';
         }
         $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT]['mod'] = $javascript;
-        $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT_ANONYMOUS_PAGE]['mod'] = $javascript;
+
+        // The favicon must also be applied on the public login page. Do not load
+        // the upload-preview helper on anonymous pages.
+        if ($faviconEnabled) {
+            $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT_ANONYMOUS_PAGE]['mod'] = ['favicon.js'];
+        }
 
         $title = BrandManager::getCurrentTitle();
         if ($title !== '') {
@@ -74,9 +76,8 @@ final class BrandingHooks
         }
     }
 
-
     /**
-     * Preload only the branding logos relevant to the current interface state.
+     * Preload the logo assets that can be used by the current interface state.
      *
      * @return array<int, array{tag: string, properties: array<string, string>}>
      */
@@ -92,22 +93,22 @@ final class BrandingHooks
 
         if ($isAnonymous) {
             $resourceName = $themeLogos
-                ? ($themeIsDark ? 'logo_l_black' : 'logo_l_white')
+                ? ($themeIsDark ? 'logo_l_white' : 'logo_l_black')
                 : 'logo_l';
 
             return [self::createPreloadTag($resourceName)];
         }
 
-        $medium = $themeLogos
-            ? ($themeIsDark ? 'logo_m_black' : 'logo_m_white')
-            : 'logo_m';
-        $small = $themeLogos
-            ? ($themeIsDark ? 'logo_s_black' : 'logo_s_white')
-            : 'logo_s';
+        if ($themeLogos) {
+            return [
+                self::createPreloadTag('logo_m_white'),
+                self::createPreloadTag('logo_s_white'),
+            ];
+        }
 
         return [
-            self::createPreloadTag($medium),
-            self::createPreloadTag($small),
+            self::createPreloadTag('logo_m'),
+            self::createPreloadTag('logo_s'),
         ];
     }
 
@@ -130,6 +131,4 @@ final class BrandingHooks
             ],
         ];
     }
-
-
 }
