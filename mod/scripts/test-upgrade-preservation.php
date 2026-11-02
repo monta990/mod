@@ -39,6 +39,16 @@ $legacyFiles = [
 foreach ($legacyFiles as $legacyName => $currentName) {
     file_put_contents($uploads . '/' . $legacyName, 'original-upload:' . $legacyName);
 }
+// Grey variants existed in older builds but are no longer active resource slots.
+// They must still remain intact in persistent storage during an update.
+$legacyPreserveOnly = [
+    'logo-G-100-grey.png',
+    'logo-GLPI-100-grey.png',
+    'logo-GLPI-250-grey.png',
+];
+foreach ($legacyPreserveOnly as $legacyName) {
+    file_put_contents($uploads . '/' . $legacyName, 'preserve-legacy:' . $legacyName);
+}
 file_put_contents($uploads . '/customer-extra.bin', 'preserve-this-file');
 
 $manager = new \GlpiPlugin\Mod\BrandManager();
@@ -61,6 +71,12 @@ foreach ($legacyFiles as $legacyName => $currentName) {
 
 if (file_get_contents($uploads . '/customer-extra.bin') !== 'preserve-this-file') {
     throw new RuntimeException('An unrelated file in the uploads directory was modified.');
+}
+
+foreach ($legacyPreserveOnly as $legacyName) {
+    if (file_get_contents($uploads . '/' . $legacyName) !== 'preserve-legacy:' . $legacyName) {
+        throw new RuntimeException(sprintf('A previous grey-logo upload was lost: %s', $legacyName));
+    }
 }
 
 // A second install/update call must not overwrite a newer upload or settings.
