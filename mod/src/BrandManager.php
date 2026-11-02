@@ -419,7 +419,7 @@ final class BrandManager
             }
 
             if (!is_readable($legacyPath) || !@copy($legacyPath, $currentPath)) {
-                throw new \\RuntimeException(
+                throw new \RuntimeException(
                     sprintf('Unable to preserve legacy branding upload "%s".', $legacyName)
                 );
             }
@@ -429,18 +429,18 @@ final class BrandManager
         // copy fails, the next install/update attempt can safely retry.
         $temporaryMarker = tempnam(self::FILES_DIR, '.migration-');
         if ($temporaryMarker === false) {
-            throw new \\RuntimeException('Unable to create the branding migration marker.');
+            throw new \RuntimeException('Unable to create the branding migration marker.');
         }
 
         try {
-            if (file_put_contents($temporaryMarker, "legacy-upload-names-v1\\n", LOCK_EX) === false) {
-                throw new \\RuntimeException('Unable to write the branding migration marker.');
+            if (file_put_contents($temporaryMarker, "legacy-upload-names-v1\n", LOCK_EX) === false) {
+                throw new \RuntimeException('Unable to write the branding migration marker.');
             }
 
             if (!@rename($temporaryMarker, self::LEGACY_UPLOAD_MIGRATION_MARKER)
                 && !is_file(self::LEGACY_UPLOAD_MIGRATION_MARKER)
             ) {
-                throw new \\RuntimeException('Unable to finalize the branding migration marker.');
+                throw new \RuntimeException('Unable to finalize the branding migration marker.');
             }
         } finally {
             if (is_file($temporaryMarker)) {
