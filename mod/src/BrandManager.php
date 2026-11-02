@@ -67,6 +67,7 @@ final class BrandManager
             'mime'            => 'image/png',
             'max_size'       => 2 * 1024 * 1024,
             'min_dimensions' => null,
+            'exact_dimensions' => [53, 53],
         ],
         'logo_m' => [
             'filename'       => 'sample-logo-horizontal.png',
@@ -75,6 +76,7 @@ final class BrandManager
             'mime'            => 'image/png',
             'max_size'       => 2 * 1024 * 1024,
             'min_dimensions' => null,
+            'exact_dimensions' => [100, 55],
         ],
         'logo_l' => [
             'filename'       => 'sample-logo-login.png',
@@ -83,6 +85,7 @@ final class BrandManager
             'mime'            => 'image/png',
             'max_size'       => 2 * 1024 * 1024,
             'min_dimensions' => null,
+            'exact_dimensions' => [250, 138],
         ],
         'logo_s_black' => [
             'filename'       => 'sample-logo-mark-dark.png',
@@ -91,6 +94,7 @@ final class BrandManager
             'mime'            => 'image/png',
             'max_size'       => 2 * 1024 * 1024,
             'min_dimensions' => null,
+            'exact_dimensions' => [53, 53],
         ],
         'logo_s_white' => [
             'filename'       => 'sample-logo-mark-light.png',
@@ -99,6 +103,7 @@ final class BrandManager
             'mime'            => 'image/png',
             'max_size'       => 2 * 1024 * 1024,
             'min_dimensions' => null,
+            'exact_dimensions' => [53, 53],
         ],
         'logo_m_black' => [
             'filename'       => 'sample-logo-horizontal-dark.png',
@@ -107,6 +112,7 @@ final class BrandManager
             'mime'            => 'image/png',
             'max_size'       => 2 * 1024 * 1024,
             'min_dimensions' => null,
+            'exact_dimensions' => [100, 55],
         ],
         'logo_m_white' => [
             'filename'       => 'sample-logo-horizontal-light.png',
@@ -115,6 +121,7 @@ final class BrandManager
             'mime'            => 'image/png',
             'max_size'       => 2 * 1024 * 1024,
             'min_dimensions' => null,
+            'exact_dimensions' => [100, 55],
         ],
         'logo_l_black' => [
             'filename'       => 'sample-logo-login-dark.png',
@@ -123,6 +130,7 @@ final class BrandManager
             'mime'            => 'image/png',
             'max_size'       => 2 * 1024 * 1024,
             'min_dimensions' => null,
+            'exact_dimensions' => [250, 138],
         ],
         'logo_l_white' => [
             'filename'       => 'sample-logo-login-light.png',
@@ -131,6 +139,7 @@ final class BrandManager
             'mime'            => 'image/png',
             'max_size'       => 2 * 1024 * 1024,
             'min_dimensions' => null,
+            'exact_dimensions' => [250, 138],
         ],
     ];
 
@@ -640,6 +649,16 @@ final class BrandManager
             || ($width * $height) > 40000000
         ) {
             throw new \RuntimeException(sprintf('The uploaded "%s" dimensions are outside the allowed limits.', $resourceName));
+        }
+
+        $exact = $definition['exact_dimensions'] ?? null;
+        if ($exact !== null && ($width !== $exact[0] || $height !== $exact[1])) {
+            throw new \\RuntimeException(sprintf(
+                'The "%1$s" image must be exactly %2$dx%3$d pixels.',
+                $resourceName,
+                $exact[0],
+                $exact[1],
+            ));
         }
 
         $minimum = $definition['min_dimensions'];

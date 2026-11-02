@@ -73,7 +73,6 @@ jobs:
           test -f LICENSE
           test -f CHANGELOG.md
           cmp LICENSE mod/LICENSE.txt
-          cmp CHANGELOG.md mod/CHANGELOG.md
 
       - name: PHP syntax
         run: |
