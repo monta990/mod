@@ -1,5 +1,4 @@
-# Generated release artwork; produced by scripts/generate-assets.py
-/logo.png
-/resources/images/background.jpg
-/resources/images/sample-icon.ico
-/resources/images/sample-logo-*.png
+# Do not ignore the plugin's sample branding files.
+# The SVG master is kept in resources/images; release packaging generates
+# the corresponding PNG, ICO, login background and root logo.png from it.
+# Keep generated sample files visible to fork maintainers and local builds.
