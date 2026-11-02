@@ -50,7 +50,20 @@ When theme-aware logos are enabled, the plugin supplies GLPI's native variables:
 - `--glpi-logo-dark` and `--glpi-logo-dark-reduced` for black expanded/collapsed navigation logos.
 - `--glpi-logo-dark-login` and `--glpi-logo-light-login` for the login logo in the corresponding GLPI palette.
 
-This keeps the expanded/collapsed menu and login behavior aligned with GLPI's own theme implementation instead of targeting internal logo elements directly. The draft is awaiting the selected original demonstration artwork. Do not publish or install a release ZIP until `logo.png`, the neutral sample logo variants and the sample favicon have replaced the previous third-party-branded files in `resources/imagenes/`.
+This keeps the expanded/collapsed menu and login behavior aligned with GLPI's own theme implementation instead of targeting internal logo elements directly. The sample artwork is an original indigo-and-amber folded-ribbon identity created for UI Branding; it contains no GLPI or third-party product marks.
+
+## Bundled sample artwork
+
+The repository keeps the editable vector master at `resources/imagenes/sample-ribbon-mark.svg`. During release packaging, `scripts/generate-assets.py` creates:
+
+- `logo.png` in the plugin root.
+- Transparent square, horizontal and login logo PNGs, each with light- and dark-surface variants.
+- `sample-icon.ico`, containing 16, 32, 48 and 64 pixel sizes.
+- A neutral 1920×1080 `background.jpg` for the optional login background.
+
+The generated files are placed in `resources/imagenes/` in the installation ZIP. Fresh installations therefore show demonstration artwork until an administrator uploads their own brand assets. End users do not need Python or image-generation dependencies; those are needed only to build the release ZIP.
+
+The design palette is indigo (`#314FA8`), deep navy (`#102553`), amber (`#FFC62E`) and orange (`#F08B13`).
 
 ## Data and uninstall
 
