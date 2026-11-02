@@ -60,6 +60,7 @@ jobs:
       - name: Checkout UI Branding
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Checkout GLPI 12.0
@@ -124,7 +125,7 @@ jobs:
             git -C "$GITHUB_WORKSPACE" diff --name-only --diff-filter=ACMR "$BASE_SHA" "$GITHUB_SHA" \
               | grep -E '^(mod/setup\.php|mod/hook\.php|mod/src/.+\.php)$' || true
           )
-          if [[ \${#changed_php[@]} -eq 0 ]]; then
+          if [[ ${#changed_php[@]} -eq 0 ]]; then
             echo "No changed runtime PHP files; style gate is not applicable."
             exit 0
           fi
@@ -133,7 +134,7 @@ jobs:
             --path-mode=intersection \
             --using-cache=no \
             --diff \
-            "\${changed_php[@]}"
+            "${changed_php[@]}"
 
       - name: PHP lint with deprecated syntax detection
         working-directory: glpi
