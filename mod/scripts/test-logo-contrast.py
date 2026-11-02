@@ -3,6 +3,7 @@
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import importlib.util
+import sys
 
 from PIL import Image
 
@@ -11,15 +12,14 @@ SPEC = importlib.util.spec_from_file_location('generate_assets', GENERATOR_PATH)
 if SPEC is None or SPEC.loader is None:
     raise RuntimeError('Unable to load the artwork generator for contrast testing.')
 generate_assets = importlib.util.module_from_spec(SPEC)
+sys.modules[SPEC.name] = generate_assets
 SPEC.loader.exec_module(generate_assets)
 
-from generate_assets import (
-    DARK_THEME_MARK_BACKGROUND,
-    LIGHT_MARK_MIN_CONTRAST,
-    make_light_mark,
-    render_master,
-    validate_light_mark_contrast,
-)
+DARK_THEME_MARK_BACKGROUND = generate_assets.DARK_THEME_MARK_BACKGROUND
+LIGHT_MARK_MIN_CONTRAST = generate_assets.LIGHT_MARK_MIN_CONTRAST
+make_light_mark = generate_assets.make_light_mark
+render_master = generate_assets.render_master
+validate_light_mark_contrast = generate_assets.validate_light_mark_contrast
 
 
 def main() -> None:
