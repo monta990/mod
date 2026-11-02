@@ -3,6 +3,8 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DIST="${1:-$ROOT/dist}"
+mkdir -p "$DIST"
+DIST="$(cd "$DIST" && pwd)"
 WORK="$DIST/package"
 PACKAGE_ROOT="$WORK/mod"
 
