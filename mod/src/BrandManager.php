@@ -21,6 +21,19 @@ final class BrandManager
     public const FILES_DIR = GLPI_PLUGIN_DOC_DIR . '/mod';
     public const UPLOADS_DIR = self::FILES_DIR . '/uploads';
     private const CONFIG_FILE = self::FILES_DIR . '/settings.ini';
+    private const LEGACY_UPLOAD_MIGRATION_MARKER = self::FILES_DIR . '/.legacy-upload-names-migrated';
+    private const LEGACY_UPLOAD_FILENAMES = [
+        'favicon.ico'                => 'sample-icon.ico',
+        'logo-G-100.png'             => 'sample-logo-mark.png',
+        'logo-GLPI-100.png'           => 'sample-logo-horizontal.png',
+        'logo-GLPI-250.png'           => 'sample-logo-login.png',
+        'logo-G-100-black.png'        => 'sample-logo-mark-dark.png',
+        'logo-G-100-white.png'        => 'sample-logo-mark-light.png',
+        'logo-GLPI-100-black.png'     => 'sample-logo-horizontal-dark.png',
+        'logo-GLPI-100-white.png'     => 'sample-logo-horizontal-light.png',
+        'logo-GLPI-250-black.png'     => 'sample-logo-login-dark.png',
+        'logo-GLPI-250-white.png'     => 'sample-logo-login-light.png',
+    ];
 
     private const DEFAULT_CONFIG = [
         'title'       => 'GLPI',
@@ -381,11 +394,68 @@ final class BrandManager
         return self::readConfigFile()['favicon'] === '1';
     }
 
+    /**
+     * Preserve uploads made by the previous UI Branding builds.
+     *
+     * Earlier builds stored administrator images in the same persistent
+     * uploads directory but used GLPI-derived filenames. Copy them to the
+     * current neutral resource names without deleting the originals or
+     * overwriting files already uploaded using the new names.
+     *
+     * This method is idempotent and runs from the GLPI install/update hook.
+     */
+    private static function migrateLegacyUploadedResources(): void
+    {
+        if (is_file(self::LEGACY_UPLOAD_MIGRATION_MARKER)) {
+            return;
+        }
+
+        foreach (self::LEGACY_UPLOAD_FILENAMES as $legacyName => $currentName) {
+            $legacyPath = self::UPLOADS_DIR . '/' . $legacyName;
+            $currentPath = self::UPLOADS_DIR . '/' . $currentName;
+
+            if (!is_file($legacyPath) || is_file($currentPath)) {
+                continue;
+            }
+
+            if (!is_readable($legacyPath) || !@copy($legacyPath, $currentPath)) {
+                throw new \\RuntimeException(
+                    sprintf('Unable to preserve legacy branding upload "%s".', $legacyName)
+                );
+            }
+        }
+
+        // Write the marker only after all copy operations complete. If one
+        // copy fails, the next install/update attempt can safely retry.
+        $temporaryMarker = tempnam(self::FILES_DIR, '.migration-');
+        if ($temporaryMarker === false) {
+            throw new \\RuntimeException('Unable to create the branding migration marker.');
+        }
+
+        try {
+            if (file_put_contents($temporaryMarker, "legacy-upload-names-v1\\n", LOCK_EX) === false) {
+                throw new \\RuntimeException('Unable to write the branding migration marker.');
+            }
+
+            if (!@rename($temporaryMarker, self::LEGACY_UPLOAD_MIGRATION_MARKER)
+                && !is_file(self::LEGACY_UPLOAD_MIGRATION_MARKER)
+            ) {
+                throw new \\RuntimeException('Unable to finalize the branding migration marker.');
+            }
+        } finally {
+            if (is_file($temporaryMarker)) {
+                @unlink($temporaryMarker);
+            }
+        }
+    }
+
     public function install(): void
     {
         self::ensureDir(self::FILES_DIR);
         self::ensureDir(self::UPLOADS_DIR);
+        self::migrateLegacyUploadedResources();
 
+        // Never rewrite an existing settings.ini during an install/update.
         if (!is_file(self::CONFIG_FILE)) {
             $values = self::DEFAULT_CONFIG;
 

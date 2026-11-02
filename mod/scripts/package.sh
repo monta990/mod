@@ -16,6 +16,16 @@ mkdir -p "$PACKAGE_ROOT"
 cp -a "$ROOT/LICENSE.txt" "$ROOT/README.md" "$ROOT/CHANGELOG.md" "$ROOT/TESTING.md" "$ROOT/mod.xml" "$ROOT/setup.php" "$ROOT/hook.php" "$PACKAGE_ROOT/"
 cp -a "$ROOT/src" "$ROOT/public" "$ROOT/templates" "$ROOT/resources" "$ROOT/locales" "$PACKAGE_ROOT/"
 
+# Compile every catalog for the package; the English msgid catalogue remains
+# the base language and the existing locales provide their translated strings.
+if ! command -v msgfmt >/dev/null 2>&1; then
+    echo "gettext (msgfmt) is required to build translated plugin catalogs." >&2
+    exit 1
+fi
+for po in "$PACKAGE_ROOT"/locales/*.po; do
+    msgfmt --check --check-format -o "${po%.po}.mo" "$po"
+done
+
 # Raster assets and logo.png are generated from the original SVG master.
 python3 "$ROOT/scripts/generate-assets.py" "$PACKAGE_ROOT"
 
