@@ -4,6 +4,7 @@ namespace GlpiPlugin\Mod\Controller;
 
 use Glpi\Cache\CacheManager;
 use Glpi\Controller\AbstractController;
+use Glpi\Error\ErrorHandler;
 use GlpiPlugin\Mod\Paths;
 use GlpiPlugin\Mod\UIBranding;
 use Session;
@@ -27,14 +28,23 @@ final class UIBrandingController extends AbstractController
 
         if ($request->isMethod('POST')) {
             if ($request->request->has('clear_cache')) {
-                $cacheManager = new CacheManager();
-                if ($cacheManager->resetAllCaches()) {
-                    Session::addMessageAfterRedirect(__('GLPI cache cleared successfully.', 'mod'));
-                } else {
+                try {
+                    $cacheManager = new CacheManager();
+                    if ($cacheManager->resetAllCaches()) {
+                        Session::addMessageAfterRedirect(__('GLPI cache cleared successfully.', 'mod'));
+                    } else {
+                        Session::addMessageAfterRedirect(
+                            __('Unable to clear the GLPI cache completely.', 'mod'),
+                            true,
+                            WARNING,
+                        );
+                    }
+                } catch (Throwable $e) {
+                    ErrorHandler::logCaughtException($e);
                     Session::addMessageAfterRedirect(
-                        __('Unable to clear the GLPI cache completely.', 'mod'),
+                        __('Unable to clear the GLPI cache. Check the GLPI logs for more information.', 'mod'),
                         true,
-                        WARNING,
+                        ERROR,
                     );
                 }
 
@@ -51,10 +61,7 @@ final class UIBrandingController extends AbstractController
                     __('UI Branding settings saved successfully. It is recommended to clear both the GLPI cache and your browser cache to apply all changes.', 'mod')
                 );
             } catch (Throwable $e) {
-                global $GLPI;
-                if (isset($GLPI) && method_exists($GLPI, 'getErrorHandler')) {
-                    $GLPI->getErrorHandler()->handleException($e, false);
-                }
+                ErrorHandler::logCaughtException($e);
 
                 Session::addMessageAfterRedirect(
                     __('Unable to save UI Branding settings. Check the GLPI logs for more information.', 'mod'),

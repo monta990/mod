@@ -3,8 +3,8 @@
 /**
  * UI Branding plugin for GLPI 12.
  *
- * @copyright Copyright (C) 2026 by i-Vertix/PGUM.
- * @license GPLv3
+ * @copyright Copyright (C) 2026 by Edwin Elias Alvarez.
+ * @license GPL-3.0-or-later
  */
 
 namespace GlpiPlugin\Mod;
@@ -28,13 +28,6 @@ final class BrandManager
         'theme_logos' => '0',
         'show_logos'  => '0',
         'favicon'     => '0',
-    ];
-
-    private const MIME_MAP = [
-        'jpg'  => ['image/jpeg'],
-        'jpeg' => ['image/jpeg'],
-        'png'  => ['image/png'],
-        'ico'  => ['image/x-icon', 'image/vnd.microsoft.icon'],
     ];
 
     private const RESOURCE_DEFINITIONS = [
@@ -154,21 +147,27 @@ final class BrandManager
 
     public static function getResourceDir(): string
     {
-        return rtrim((string) \Plugin::getPhpDir('mod'), '/') . '/resources/images';
+        $pluginDir = \Plugin::getPhpDir('mod');
+        if (!is_string($pluginDir) || $pluginDir === '') {
+            throw new \RuntimeException('Unable to resolve the UI Branding plugin directory.');
+        }
+
+        return rtrim($pluginDir, '/') . '/resources/images';
     }
 
     private static function getResourceRootDir(): string
     {
-        return rtrim((string) \Plugin::getPhpDir('mod'), '/') . '/resources';
+        return dirname(self::getResourceDir());
     }
 
     public static function getImageResources(): array
     {
         $resources = [];
 
+        $resourceDir = self::getResourceDir();
         foreach (self::RESOURCE_DEFINITIONS as $name => $definition) {
             $resources[$name] = [
-                'default' => self::getResourceDir() . '/' . $definition['default'],
+                'default' => $resourceDir . '/' . $definition['default'],
                 'current' => self::UPLOADS_DIR . '/' . $definition['filename'],
                 'accept'  => $definition['extensions'],
             ];
@@ -180,6 +179,15 @@ final class BrandManager
     public static function isValidResourceKey(string $resourceName): bool
     {
         return isset(self::RESOURCE_DEFINITIONS[$resourceName]);
+    }
+
+    public static function getResourceMimeType(string $resourceName): string
+    {
+        if (!self::isValidResourceKey($resourceName)) {
+            throw new \InvalidArgumentException('Invalid resource.');
+        }
+
+        return self::RESOURCE_DEFINITIONS[$resourceName]['mime'] ?? 'image/x-icon';
     }
 
     public static function getCurrentResourceFile(string $resourceName): ?string
@@ -310,7 +318,7 @@ final class BrandManager
             return self::DEFAULT_CONFIG;
         }
 
-        $values = parse_ini_file(self::CONFIG_FILE, false, INI_SCANNER_RAW);
+        $values = @parse_ini_file(self::CONFIG_FILE, false, INI_SCANNER_RAW);
         return is_array($values) ? self::normalizeConfig($values) : self::DEFAULT_CONFIG;
     }
 
@@ -321,7 +329,7 @@ final class BrandManager
 
         $content = sprintf(
             "title=\"%s\"\nlogin=\"%s\"\ntheme_logos=\"%s\"\nshow_logos=\"%s\"\nfavicon=\"%s\"\n",
-            str_replace('"', '\\"', $values['title']),
+            str_replace(['\\', '"'], ['\\\\', '\\"'], $values['title']),
             $values['login'],
             $values['theme_logos'],
             $values['show_logos'],
@@ -333,17 +341,36 @@ final class BrandManager
             throw new \RuntimeException('Unable to create temporary configuration file.');
         }
 
+        $backupFile = self::CONFIG_FILE . '.backup-' . bin2hex(random_bytes(6));
+        $hadPreviousFile = is_file(self::CONFIG_FILE);
+
         try {
             if (file_put_contents($tempFile, $content, LOCK_EX) === false) {
                 throw new \RuntimeException('Unable to write plugin configuration.');
             }
 
+            // Windows does not consistently allow rename() to overwrite an
+            // existing file. Move the old config aside on the same filesystem.
+            if ($hadPreviousFile && !rename(self::CONFIG_FILE, $backupFile)) {
+                throw new \RuntimeException('Unable to back up existing plugin configuration.');
+            }
+
             if (!rename($tempFile, self::CONFIG_FILE)) {
+                if ($hadPreviousFile && is_file($backupFile)) {
+                    @rename($backupFile, self::CONFIG_FILE);
+                }
                 throw new \RuntimeException('Unable to replace plugin configuration.');
+            }
+
+            if ($hadPreviousFile && is_file($backupFile)) {
+                @unlink($backupFile);
             }
         } finally {
             if (is_file($tempFile)) {
                 @unlink($tempFile);
+            }
+            if (is_file($backupFile) && !is_file(self::CONFIG_FILE)) {
+                @rename($backupFile, self::CONFIG_FILE);
             }
         }
     }
@@ -388,7 +415,7 @@ final class BrandManager
 
             $defaultConfig = self::getResourceRootDir() . '/modifiers.ini';
             if (is_file($defaultConfig)) {
-                $defaults = parse_ini_file($defaultConfig, false, INI_SCANNER_RAW);
+                $defaults = @parse_ini_file($defaultConfig, false, INI_SCANNER_RAW);
                 if (is_array($defaults)) {
                     $values = array_merge($values, $defaults);
                 }
@@ -409,7 +436,7 @@ final class BrandManager
 
     public function setConfiguration(array $values): void
     {
-        self::writeConfigFile($values);
+        self::writeConfigFile(array_merge(self::readConfigFile(), $values));
     }
 
     public function updateConfiguration(array $values): void
@@ -422,50 +449,217 @@ final class BrandManager
         $CFG_GLPI['app_name'] = $title !== '' ? $title : 'GLPI';
     }
 
-    public function uploadResource(string $resourceName, UploadedFile $file): void
+    /**
+     * Save settings and any uploaded resources as one recoverable operation.
+     *
+     * All files are validated and staged before existing resources are moved.
+     * If replacement or settings persistence fails, previous files are restored.
+     *
+     * @param array<string, mixed> $values
+     * @param array<string, UploadedFile> $uploads
+     */
+    public function saveConfiguration(array $values, array $uploads = []): void
     {
-        if (!self::isValidResourceKey($resourceName)) {
-            throw new \InvalidArgumentException('Invalid resource.');
+        $normalized = self::normalizeConfig(array_merge(self::readConfigFile(), $values));
+        self::ensureDir(self::FILES_DIR);
+        self::ensureDir(self::UPLOADS_DIR);
+
+        $stagingDir = self::UPLOADS_DIR . '/.staging-' . bin2hex(random_bytes(8));
+        if (!mkdir($stagingDir, 0700)) {
+            throw new \RuntimeException('Unable to create temporary upload directory.');
         }
 
+        $staged = [];
+        $backups = [];
+        $installed = [];
+
+        try {
+            // Validate every upload before moving or replacing any existing file.
+            foreach ($uploads as $resourceName => $file) {
+                if (!is_string($resourceName) || !self::isValidResourceKey($resourceName)) {
+                    throw new \InvalidArgumentException('Invalid branding resource.');
+                }
+                if (!$file instanceof UploadedFile) {
+                    throw new \InvalidArgumentException('Invalid uploaded file.');
+                }
+
+                self::validateUploadedResource($resourceName, $file);
+                $filename = self::RESOURCE_DEFINITIONS[$resourceName]['filename'];
+                $stagedPath = $stagingDir . '/' . $filename;
+                $file->move($stagingDir, $filename);
+                $staged[$resourceName] = $stagedPath;
+            }
+
+            // Replace files only after all uploads have passed validation/staging.
+            foreach ($staged as $resourceName => $stagedPath) {
+                $filename = self::RESOURCE_DEFINITIONS[$resourceName]['filename'];
+                $destination = self::UPLOADS_DIR . '/' . $filename;
+
+                if (is_file($destination)) {
+                    $backupPath = $stagingDir . '/backup-' . $filename;
+                    if (!rename($destination, $backupPath)) {
+                        throw new \RuntimeException(sprintf('Unable to back up existing resource "%s".', $resourceName));
+                    }
+                    $backups[$destination] = $backupPath;
+                }
+
+                if (!rename($stagedPath, $destination)) {
+                    throw new \RuntimeException(sprintf('Unable to install uploaded resource "%s".', $resourceName));
+                }
+                $installed[] = $destination;
+            }
+
+            self::writeConfigFile($normalized);
+        } catch (\Throwable $exception) {
+            foreach (array_reverse($installed) as $destination) {
+                if (is_file($destination) && !@unlink($destination)) {
+                    error_log(sprintf('UI Branding: unable to remove partially installed file "%s".', $destination));
+                }
+            }
+
+            foreach ($backups as $destination => $backupPath) {
+                if (is_file($backupPath) && !@rename($backupPath, $destination)) {
+                    error_log(sprintf('UI Branding: unable to restore previous resource "%s".', $destination));
+                }
+            }
+
+            throw $exception;
+        } finally {
+            if (is_dir($stagingDir)) {
+                Toolbox::deleteDir($stagingDir);
+            }
+        }
+
+        global $CFG_GLPI;
+        $title = $normalized['title'];
+        $CFG_GLPI['app_name'] = $title !== '' ? $title : 'GLPI';
+    }
+
+    /**
+     * Validate the uploaded file's extension, content, size and dimensions.
+     */
+    private static function validateUploadedResource(string $resourceName, UploadedFile $file): void
+    {
         if (!$file->isValid()) {
-            throw new \RuntimeException('Upload failed.');
+            throw new \RuntimeException(sprintf('The upload for "%s" failed.', $resourceName));
         }
 
         $definition = self::RESOURCE_DEFINITIONS[$resourceName];
         $extension = strtolower((string) pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION));
         if (!in_array($extension, $definition['extensions'], true)) {
-            throw new \RuntimeException('Invalid file type.');
+            throw new \RuntimeException(sprintf('Invalid file extension for "%s".', $resourceName));
         }
 
-        $size = (int) $file->getSize();
-        if ($size <= 0 || $size > $definition['max_size']) {
-            throw new \RuntimeException('The uploaded file is too large or empty.');
+        $size = $file->getSize();
+        if (!is_int($size) || $size <= 0 || $size > $definition['max_size']) {
+            throw new \RuntimeException(sprintf('The uploaded "%s" file is empty or exceeds the size limit.', $resourceName));
         }
 
         $path = $file->getPathname();
-        $mime = (new \finfo(FILEINFO_MIME_TYPE))->file($path);
-        $acceptedMime = self::MIME_MAP[$extension] ?? [];
-        if ($acceptedMime !== [] && !in_array($mime, $acceptedMime, true)) {
-            throw new \RuntimeException('The uploaded file content does not match its extension.');
+        if (!is_file($path) || !is_readable($path)) {
+            throw new \RuntimeException(sprintf('Unable to read uploaded resource "%s".', $resourceName));
         }
 
-        $dimensions = $definition['min_dimensions'];
-        if ($dimensions !== null) {
-            $imageInfo = @getimagesize($path);
-            if (!is_array($imageInfo) || $imageInfo[0] < $dimensions[0] || $imageInfo[1] < $dimensions[1]) {
-                throw new \RuntimeException(sprintf(
-                    'The image dimensions must be at least %1$dx%2$d pixels.',
-                    $dimensions[0],
-                    $dimensions[1],
-                ));
+        if ($resourceName === 'favicon') {
+            self::validateIcoFile($path);
+            return;
+        }
+
+        $mime = (new \finfo(FILEINFO_MIME_TYPE))->file($path);
+        if (!is_string($mime) || $mime !== $definition['mime']) {
+            throw new \RuntimeException(sprintf('The uploaded "%s" content does not match its file type.', $resourceName));
+        }
+
+        $imageInfo = @getimagesize($path);
+        $expectedType = $extension === 'png' ? IMAGETYPE_PNG : IMAGETYPE_JPEG;
+        if (!is_array($imageInfo) || ($imageInfo[2] ?? null) !== $expectedType) {
+            throw new \RuntimeException(sprintf('The uploaded "%s" is not a valid supported image.', $resourceName));
+        }
+
+        $width = (int) $imageInfo[0];
+        $height = (int) $imageInfo[1];
+        if (
+            $width < 1
+            || $height < 1
+            || $width > 8192
+            || $height > 8192
+            || ($width * $height) > 40000000
+        ) {
+            throw new \RuntimeException(sprintf('The uploaded "%s" dimensions are outside the allowed limits.', $resourceName));
+        }
+
+        $minimum = $definition['min_dimensions'];
+        if ($minimum !== null && ($width < $minimum[0] || $height < $minimum[1])) {
+            throw new \RuntimeException(sprintf(
+                'The "%1$s" image must be at least %2$dx%3$d pixels.',
+                $resourceName,
+                $minimum[0],
+                $minimum[1],
+            ));
+        }
+    }
+
+    /**
+     * Validate an ICO directory and its embedded image payloads.
+     */
+    private static function validateIcoFile(string $path): void
+    {
+        $data = file_get_contents($path);
+        if (!is_string($data) || strlen($data) < 22) {
+            throw new \RuntimeException('The favicon is not a valid ICO file.');
+        }
+
+        $header = unpack('vreserved/vtype/vcount', substr($data, 0, 6));
+        if (
+            !is_array($header)
+            || $header['reserved'] !== 0
+            || $header['type'] !== 1
+            || $header['count'] < 1
+            || $header['count'] > 64
+        ) {
+            throw new \RuntimeException('The favicon is not a valid ICO directory.');
+        }
+
+        $directoryEnd = 6 + (16 * $header['count']);
+        if (strlen($data) < $directoryEnd) {
+            throw new \RuntimeException('The favicon ICO directory is truncated.');
+        }
+
+        for ($index = 0; $index < $header['count']; $index++) {
+            $entryData = substr($data, 6 + (16 * $index), 16);
+            $entry = unpack('Cwidth/Cheight/Ccolors/Creserved/vplanes/vbits/Vbytes/Voffset', $entryData);
+            if (!is_array($entry)) {
+                continue;
+            }
+
+            $width = $entry['width'] === 0 ? 256 : $entry['width'];
+            $height = $entry['height'] === 0 ? 256 : $entry['height'];
+            $offset = $entry['offset'];
+            $bytes = $entry['bytes'];
+
+            if (
+                $width < 16
+                || $height < 16
+                || $width > 256
+                || $height > 256
+                || $bytes < 8
+                || $offset < $directoryEnd
+                || ($offset + $bytes) > strlen($data)
+            ) {
+                continue;
+            }
+
+            $payload = substr($data, $offset, $bytes);
+            $isPng = str_starts_with($payload, "\x89PNG\r\n\x1a\n");
+            $dibHeader = unpack('Vsize', substr($payload, 0, 4));
+            $isDib = is_array($dibHeader) && in_array($dibHeader['size'], [40, 108, 124], true);
+
+            if ($isPng || $isDib) {
+                return;
             }
         }
 
-        $destination = self::UPLOADS_DIR . '/' . $definition['filename'];
-        self::ensureDir(dirname($destination));
-
-        $file->move(dirname($destination), basename($destination));
+        throw new \RuntimeException('The favicon does not contain a valid embedded image.');
     }
 
     public function setLoginEnabled(bool $enabled): void
