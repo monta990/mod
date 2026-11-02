@@ -45,9 +45,14 @@ $expect(
 );
 $expect(
     preg_match('/<glpi>12\\.0<\\/glpi>/', $xml) === 1
-    && preg_match('/<php>8\\.2<\\/php>/', $xml) === 1
+    && preg_match('/<php>8\\.3<\\/php>/', $xml) === 1
     && str_contains($xml, '<compatibility>~12.0.0</compatibility>'),
-    'mod.xml must declare GLPI 12.0.x and PHP 8.2+ requirements.'
+    'mod.xml must declare GLPI 12.0.x and PHP 8.3+ requirements.'
+);
+
+$expect(
+    preg_match("/'min' => '8\\.3'/", $setup) === 1,
+    'setup.php must declare PHP 8.3 as the minimum requirement.'
 );
 
 $required = [
@@ -66,12 +71,15 @@ $required = [
     'public/uibranding.js',
     'public/favicon.js',
     'resources/modifiers.ini',
+    'resources/imagenes',
 ];
 
 foreach ($required as $relative) {
     $expect(is_file($root . DIRECTORY_SEPARATOR . $relative), sprintf('Missing required release file: %s', $relative));
 }
 
+$expect(basename($root) === 'mod', 'All plugin files must be located inside the mod/ directory.');
+$expect(!is_dir($root . '/resources/images'), 'Bundled images must be stored in resources/imagenes/.');
 $expect(!is_dir($root . '/front'), 'The modern GLPI 12 plugin must not add legacy front/ entry points.');
 $expect(!is_dir($root . '/ajax'), 'The modern GLPI 12 plugin must not add legacy ajax/ entry points.');
 $expect(!is_dir($root . '/vendor'), 'The plugin must not ship a private vendor directory.');
