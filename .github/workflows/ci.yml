@@ -86,9 +86,16 @@ jobs:
 
       - name: PHP syntax
         run: |
-          find mod/setup.php mod/hook.php mod/src -type f -name '*.php' -print0 | xargs -0 -n1 php -l
-          php -l mod/scripts/validate-release.php
-          php -l mod/scripts/test-upgrade-preservation.php
+          find mod .github -type f -name '*.php' -print0 | sort -z | xargs -0 -r -n1 php -l
+
+      - name: Check first-party JavaScript syntax
+        run: |
+          set -euo pipefail
+          node --version
+          while IFS= read -r -d '' file; do
+            echo "Checking $file"
+            node --check "$file"
+          done < <(find mod/public -type f -name '*.js' ! -name '*.min.js' -print0)
 
       - name: Test upgrade data preservation
         run: php mod/scripts/test-upgrade-preservation.php
