@@ -31,7 +31,7 @@ jobs:
       fail-fast: false
       matrix:
         language:
-          - php
+          - actions
           - javascript-typescript
           - python
     steps:
@@ -110,7 +110,7 @@ jobs:
           vendor/bin/twigcs \
             --ansi \
             --no-interaction \
-            --ruleset='Glpi\\Tools\\GlpiTwigRuleset' \
+            --ruleset='Glpi\Tools\GlpiTwigRuleset' \
             plugins/mod/templates
 
       - name: PHPStan with GLPI extensions
