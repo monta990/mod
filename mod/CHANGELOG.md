@@ -15,7 +15,9 @@ All notable changes to UI Branding are documented here.
 - Standardized the plugin version to `12.0.0` across plugin metadata.
 - Declared compatibility with GLPI 12.0.x and PHP 8.3 or newer.
 - Reorganized the repository so all plugin files and bundled assets reside under `mod/`; GitHub Actions remains repository infrastructure outside that directory.
-- Renamed bundled resource storage to `resources/imagenes/` and prepared neutral sample resource filenames; final artwork is pending the selected concept.
+- Replaced the previous GLPI-branded sample artwork with an original indigo-and-amber folded-ribbon identity.
+- Added an editable SVG master and reproducible generator for `logo.png`, light/dark logo variants, the multi-resolution sample ICO and a neutral 1920×1080 login background.
+- Generated raster assets are included in the installation ZIP under `resources/imagenes/`; no external product marks are used.
 - Expanded CI to stable PHP 8.3, 8.4 and 8.5, plus a non-blocking PHP 8.6 pre-release/nightly check.
 - Use GLPI's native PSR-4 plugin autoloader.
 - Use GLPI's native light/dark logo variables rather than overriding internal logo element selectors.
