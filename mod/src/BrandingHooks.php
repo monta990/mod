@@ -6,7 +6,9 @@ use Glpi\Plugin\Hooks;
 use Glpi\UI\ThemeManager;
 
 if (!defined('GLPI_ROOT')) {
-    die("Sorry. You can't access directly to this file");
+    http_response_code(403);
+    header('Content-Type: text/plain; charset=UTF-8');
+    return;
 }
 
 final class BrandingHooks

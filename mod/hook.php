@@ -9,7 +9,7 @@ use GlpiPlugin\Mod\BrandManager;
  * a plugin update. BrandManager::install() is idempotent and preserves the
  * existing settings.ini and administrator uploads.
  *
- * @param array $params
+ * @param array<string, mixed> $params
  */
 function plugin_mod_install(array $params = []): bool
 {
