@@ -60,6 +60,7 @@ $required = [
     'hook.php',
     'mod.xml',
     'LICENSE.txt',
+    'logo.png',
     'src/BrandManager.php',
     'src/BrandingHooks.php',
     'src/Paths.php',
@@ -71,6 +72,19 @@ $required = [
     'public/uibranding.js',
     'public/favicon.js',
     'resources/modifiers.ini',
+    'resources/imagenes/sample-ribbon-mark.svg',
+    'resources/imagenes/ASSET_README.md',
+    'resources/imagenes/background.jpg',
+    'resources/imagenes/sample-icon.ico',
+    'resources/imagenes/sample-logo-mark.png',
+    'resources/imagenes/sample-logo-mark-dark.png',
+    'resources/imagenes/sample-logo-mark-light.png',
+    'resources/imagenes/sample-logo-horizontal.png',
+    'resources/imagenes/sample-logo-horizontal-dark.png',
+    'resources/imagenes/sample-logo-horizontal-light.png',
+    'resources/imagenes/sample-logo-login.png',
+    'resources/imagenes/sample-logo-login-dark.png',
+    'resources/imagenes/sample-logo-login-light.png',
 ];
 
 foreach ($required as $relative) {
@@ -80,6 +94,9 @@ foreach ($required as $relative) {
 $expect(basename($root) === 'mod', 'All plugin files must be located inside the mod/ directory.');
 $expect(is_dir($root . '/resources/imagenes'), 'Bundled images must be stored in resources/imagenes/.');
 $expect(!is_dir($root . '/resources/images'), 'Do not keep an English-named resources/images directory.');
+foreach (['favicon.ico', 'logo-G-100.png', 'logo-GLPI-100.png', 'logo-GLPI-250.png'] as $forbidden) {
+    $expect(!is_file($root . '/resources/imagenes/' . $forbidden), sprintf('Third-party-branded sample resource still exists: %s', $forbidden));
+}
 $expect(!is_dir($root . '/front'), 'The modern GLPI 12 plugin must not add legacy front/ entry points.');
 $expect(!is_dir($root . '/ajax'), 'The modern GLPI 12 plugin must not add legacy ajax/ entry points.');
 $expect(!is_dir($root . '/vendor'), 'The plugin must not ship a private vendor directory.');
