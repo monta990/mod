@@ -5,7 +5,9 @@ namespace GlpiPlugin\Mod;
 use Html;
 
 if (!defined('GLPI_ROOT')) {
-    die("Sorry. You can't access directly to this file");
+    header('HTTP/1.1 403 Forbidden');
+    header('Content-Type: text/plain; charset=UTF-8');
+    return;
 }
 
 /**
