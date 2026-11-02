@@ -62,6 +62,18 @@ final class BrandingCssController extends AbstractController
                 . '--glpi-logo-dark-login:url("' . $logoDarkLogin . '") !important;'
                 . '--glpi-logo-light-login:url("' . $logoLightLogin . '") !important;'
                 . '}';
+
+            // GLPI's default navigation logo remains light; explicitly select
+            // the black logo only when GLPI marks the active palette as dark.
+            // Keep the collapsed-menu variant in sync with the expanded logo.
+            $rules[] = ':root[data-glpi-theme-dark="0"]{'
+                . '--glpi-logo:var(--glpi-logo-light) !important;'
+                . '--glpi-logo-reduced:var(--glpi-logo-light-reduced) !important;'
+                . '}';
+            $rules[] = ':root[data-glpi-theme-dark="1"]{'
+                . '--glpi-logo:var(--glpi-logo-dark) !important;'
+                . '--glpi-logo-reduced:var(--glpi-logo-dark-reduced) !important;'
+                . '}';
         }
 
         if ($config['login'] === '1') {
