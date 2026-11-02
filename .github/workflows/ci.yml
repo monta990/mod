@@ -80,6 +80,9 @@ jobs:
           find mod/setup.php mod/hook.php mod/src -type f -name '*.php' -print0 | xargs -0 -n1 php -l
           php -l mod/scripts/validate-release.php\n          php -l mod/scripts/test-upgrade-preservation.php
 
+      - name: Test upgrade data preservation
+        run: php mod/scripts/test-upgrade-preservation.php
+
       - name: Validate release metadata and folder layout
         run: php mod/scripts/validate-release.php
 
