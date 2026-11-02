@@ -13,7 +13,7 @@ All notable changes to UI Branding are documented here.
 
 ### Changed
 - Standardized the plugin version to `12.0.0` across plugin metadata.
-- Declared compatibility with GLPI 12.0.x and PHP 8.2 or newer.
+- Declared compatibility with GLPI 12.0.x and PHP 8.3 or newer.
 - Use GLPI's native PSR-4 plugin autoloader.
 - Use GLPI's native light/dark logo variables rather than overriding internal logo element selectors.
 - Generate Controller URLs through GLPI's URL-prefix helper, including installations hosted in a subdirectory.
