@@ -110,9 +110,12 @@ final class BrandingHooks
         }
 
         if ($themeLogos) {
+            $medium = $themeIsDark ? 'logo_m_black' : 'logo_m_white';
+            $small = $themeIsDark ? 'logo_s_black' : 'logo_s_white';
+
             return [
-                self::createPreloadTag('logo_m_white'),
-                self::createPreloadTag('logo_s_white'),
+                self::createPreloadTag($medium),
+                self::createPreloadTag($small),
             ];
         }
 
