@@ -81,17 +81,17 @@ final class UIBranding
             'show_custom_favicon' => $config['favicon'] === '1',
             'page_title'          => $config['title'],
             'base_logos'          => [
-                ['name' => 'logo_s', 'label' => __('Small Logo', 'mod'), 'size' => '53x53'],
-                ['name' => 'logo_m', 'label' => __('Medium Logo', 'mod'), 'size' => '100x55'],
-                ['name' => 'logo_l', 'label' => __('Large Logo', 'mod'), 'size' => '250x138'],
+                ['name' => 'logo_s', 'label' => __('Small Logo', 'mod'), 'size' => __('Minimum 40x40', 'mod')],
+                ['name' => 'logo_m', 'label' => __('Medium Logo', 'mod'), 'size' => __('Minimum 100x55', 'mod')],
+                ['name' => 'logo_l', 'label' => __('Large Logo', 'mod'), 'size' => __('Minimum 220x130', 'mod')],
             ],
             'theme_logos'         => [
-                ['name' => 'logo_s_white', 'label' => __('Small Logo (white)', 'mod'), 'size' => '53x53'],
-                ['name' => 'logo_s_black', 'label' => __('Small Logo (black)', 'mod'), 'size' => '53x53'],
-                ['name' => 'logo_m_white', 'label' => __('Medium Logo (white)', 'mod'), 'size' => '100x55'],
-                ['name' => 'logo_m_black', 'label' => __('Medium Logo (black)', 'mod'), 'size' => '100x55'],
-                ['name' => 'logo_l_black', 'label' => __('Large Logo (black)', 'mod'), 'size' => '250x138'],
-                ['name' => 'logo_l_white', 'label' => __('Large Logo (white)', 'mod'), 'size' => '250x138'],
+                ['name' => 'logo_s_white', 'label' => __('Small Logo (white)', 'mod'), 'size' => __('Minimum 40x40', 'mod')],
+                ['name' => 'logo_s_black', 'label' => __('Small Logo (black)', 'mod'), 'size' => __('Minimum 40x40', 'mod')],
+                ['name' => 'logo_m_white', 'label' => __('Medium Logo (white)', 'mod'), 'size' => __('Minimum 100x55', 'mod')],
+                ['name' => 'logo_m_black', 'label' => __('Medium Logo (black)', 'mod'), 'size' => __('Minimum 100x55', 'mod')],
+                ['name' => 'logo_l_black', 'label' => __('Large Logo (black)', 'mod'), 'size' => __('Minimum 220x130', 'mod')],
+                ['name' => 'logo_l_white', 'label' => __('Large Logo (white)', 'mod'), 'size' => __('Minimum 220x130', 'mod')],
             ],
         ];
     }
