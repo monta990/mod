@@ -129,3 +129,21 @@ msgstr "Non è stato possibile svuotare completamente la cache di GLPI."
 #: src/Controller/UIBrandingController.php:50
 msgid "UI Branding settings saved successfully. It is recommended to clear both the GLPI cache and your browser cache to apply all changes."
 msgstr "Le impostazioni di UI Branding sono state salvate correttamente. Si consiglia di svuotare sia la cache di GLPI sia la cache del browser per applicare tutte le modifiche."
+
+msgid "Installed version"
+msgstr "Versione installata"
+
+msgid "Latest stable release"
+msgstr "Ultima versione stabile"
+
+msgid "A new version is available"
+msgstr "È disponibile una nuova versione"
+
+msgid "GitHub version check is currently unavailable. The plugin will retry automatically later."
+msgstr "La verifica della versione su GitHub non è attualmente disponibile. Il plugin riproverà automaticamente più tardi."
+
+msgid "Your installed version is newer than the latest stable release published on GitHub."
+msgstr "La versione installata è più recente dell'ultima versione stabile pubblicata su GitHub."
+
+msgid "View releases"
+msgstr "Visualizza le release"

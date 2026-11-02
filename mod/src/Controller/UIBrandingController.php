@@ -6,7 +6,6 @@ use Glpi\Cache\CacheManager;
 use Glpi\Controller\AbstractController;
 use Glpi\Error\ErrorHandler;
 use GlpiPlugin\Mod\Paths;
-use GlpiPlugin\Mod\Service\GitHubVersionChecker;
 use GlpiPlugin\Mod\UIBranding;
 use Session;
 use Symfony\Component\HttpFoundation\RedirectResponse;

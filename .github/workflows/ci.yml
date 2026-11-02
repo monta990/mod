@@ -78,12 +78,7 @@ jobs:
       - name: PHP syntax
         run: |
           find mod/setup.php mod/hook.php mod/src -type f -name '*.php' -print0 | xargs -0 -n1 php -l
-          php -l mod/scripts/validate-release.php
-          php -l mod/scripts/test-upgrade-preservation.php
-          php -l mod/scripts/test-upgrade-preservation.php
-
-      - name: Test upgrade data preservation
-        run: php mod/scripts/test-upgrade-preservation.php
+          php -l mod/scripts/validate-release.php\n          php -l mod/scripts/test-upgrade-preservation.php
 
       - name: Validate release metadata and folder layout
         run: php mod/scripts/validate-release.php
@@ -147,8 +142,7 @@ jobs:
       - name: Validate
         run: |
           find mod/setup.php mod/hook.php mod/src -type f -name '*.php' -print0 | xargs -0 -n1 php -l
-          php mod/scripts/validate-release.php
-          php mod/scripts/test-upgrade-preservation.php
+          php mod/scripts/validate-release.php\n          php mod/scripts/test-upgrade-preservation.php
 
       - name: Build release ZIP
         run: bash mod/scripts/package.sh dist

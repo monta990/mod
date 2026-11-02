@@ -1,8 +1,8 @@
 <?php
 
-namespace GlpiPlugin\Mod\Service;
+namespace GlpiPlugin\\Mod\\Service;
 
-use GlpiPlugin\Mod\BrandManager;
+use GlpiPlugin\\Mod\\BrandManager;
 
 if (!defined('GLPI_ROOT')) {
     die("Sorry. You can't access directly to this file");
@@ -135,7 +135,7 @@ final class GitHubVersionChecker
 
         try {
             $release = json_decode($body, true, 32, JSON_THROW_ON_ERROR);
-        } catch (\JsonException) {
+        } catch (\\JsonException) {
             $this->logFailure('GitHub API returned invalid JSON.');
             return '';
         }
@@ -165,7 +165,7 @@ final class GitHubVersionChecker
         $version = trim($version);
         $version = preg_replace('/^v/i', '', $version) ?? '';
 
-        return preg_match('/^\d+(?:\.\d+){1,3}$/', $version) === 1
+        return preg_match('/^\\d+(?:\\.\\d+){1,3}$/', $version) === 1
             ? $version
             : '';
     }
@@ -238,13 +238,13 @@ final class GitHubVersionChecker
             if ($hadPrevious && is_file($backupPath)) {
                 @unlink($backupPath);
             }
-        } catch (\Throwable) {
+        } catch (\\Throwable) {
             // Version checking is optional and must never break plugin operation.
         }
     }
 
     private function logFailure(string $message): void
     {
-        \Toolbox::logInFile('mod', 'GitHub version check failed: ' . $message . "\n");
+        \\Toolbox::logInFile('mod', 'GitHub version check failed: ' . $message . "\\n");
     }
 }
