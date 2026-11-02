@@ -57,15 +57,25 @@ final class BrandingHooks
         $PLUGIN_HOOKS[Hooks::ADD_HEADER_TAG]['mod'] = $headerTags;
         $PLUGIN_HOOKS[Hooks::ADD_HEADER_TAG_ANONYMOUS_PAGE]['mod'] = $headerTags;
 
-        // The image preview helper is only useful on authenticated plugin pages.
-        $javascript = ['uibranding.js'];
+        // Load upload-preview logic only on the plugin configuration route.
+        $requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
+        $configPath = parse_url(Paths::getConfigUrl(), PHP_URL_PATH);
+        $isConfigurationPage = is_string($requestPath)
+            && is_string($configPath)
+            && rtrim($requestPath, '/') === rtrim($configPath, '/');
+
+        $javascript = [];
+        if ($isConfigurationPage) {
+            $javascript[] = 'uibranding.js';
+        }
         if ($faviconEnabled) {
             $javascript[] = 'favicon.js';
         }
-        $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT]['mod'] = $javascript;
+        if ($javascript !== []) {
+            $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT]['mod'] = $javascript;
+        }
 
-        // The favicon must also be applied on the public login page. Do not load
-        // the upload-preview helper on anonymous pages.
+        // The favicon must also be applied on the public login page.
         if ($faviconEnabled) {
             $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT_ANONYMOUS_PAGE]['mod'] = ['favicon.js'];
         }
