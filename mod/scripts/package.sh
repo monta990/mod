@@ -38,9 +38,9 @@ fi
 
 # Confirm the package contains the generated artwork and no third-party logos.
 unzip -Z1 "$DIST/mod-12.0.0.zip" | grep -qx 'mod/logo.png'
-unzip -Z1 "$DIST/mod-12.0.0.zip" | grep -qx 'mod/resources/imagenes/background.jpg'
-unzip -Z1 "$DIST/mod-12.0.0.zip" | grep -qx 'mod/resources/imagenes/sample-icon.ico'
-unzip -Z1 "$DIST/mod-12.0.0.zip" | grep -qx 'mod/resources/imagenes/sample-logo-horizontal.png'
+unzip -Z1 "$DIST/mod-12.0.0.zip" | grep -qx 'mod/resources/images/background.jpg'
+unzip -Z1 "$DIST/mod-12.0.0.zip" | grep -qx 'mod/resources/images/sample-icon.ico'
+unzip -Z1 "$DIST/mod-12.0.0.zip" | grep -qx 'mod/resources/images/sample-logo-horizontal.png'
 if unzip -Z1 "$DIST/mod-12.0.0.zip" | grep -Eq 'logo-(GLPI|G-100)'; then
     echo "Third-party GLPI branding files found in the release archive." >&2
     exit 1

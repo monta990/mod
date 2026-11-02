@@ -1,4 +1,4 @@
-# UI Branding 12.0.0 sample artwork
+# UI Branding sample artwork
 
 The sample identity is an original folded-ribbon emblem in indigo and amber, created specifically for UI Branding. It does not use the GLPI logo, GLPI product artwork, or third-party brand marks.
 

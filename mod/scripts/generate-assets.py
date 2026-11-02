@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate UI Branding 12.0.0's original sample artwork from its SVG master."""
+"""Generate original UI Branding sample artwork from its SVG master."""
 from __future__ import annotations
 
 import argparse
@@ -122,7 +122,7 @@ def make_background(master: Image.Image, destination: Path) -> None:
 
 def generate(plugin_root: Path) -> None:
     plugin_root.mkdir(parents=True, exist_ok=True)
-    images_dir = plugin_root / 'resources' / 'imagenes'
+    images_dir = plugin_root / 'resources' / 'images'
     images_dir.mkdir(parents=True, exist_ok=True)
     svg_path = images_dir / 'sample-ribbon-mark.svg'
     if not svg_path.is_file():
@@ -179,6 +179,6 @@ def generate(plugin_root: Path) -> None:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('plugin_root', type=Path, help='Plugin root containing resources/imagenes')
+    parser.add_argument('plugin_root', type=Path, help='Plugin root containing resources/images')
     arguments = parser.parse_args()
     generate(arguments.plugin_root.resolve())
