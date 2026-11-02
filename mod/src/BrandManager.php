@@ -66,8 +66,7 @@ final class BrandManager
             'extensions'     => ['png'],
             'mime'            => 'image/png',
             'max_size'       => 2 * 1024 * 1024,
-            'min_dimensions' => null,
-            'exact_dimensions' => [53, 53],
+            'min_dimensions' => [40, 40],
         ],
         'logo_m' => [
             'filename'       => 'sample-logo-horizontal.png',
@@ -75,8 +74,7 @@ final class BrandManager
             'extensions'     => ['png'],
             'mime'            => 'image/png',
             'max_size'       => 2 * 1024 * 1024,
-            'min_dimensions' => null,
-            'exact_dimensions' => [100, 55],
+            'min_dimensions' => [100, 55],
         ],
         'logo_l' => [
             'filename'       => 'sample-logo-login.png',
@@ -84,8 +82,7 @@ final class BrandManager
             'extensions'     => ['png'],
             'mime'            => 'image/png',
             'max_size'       => 2 * 1024 * 1024,
-            'min_dimensions' => null,
-            'exact_dimensions' => [250, 138],
+            'min_dimensions' => [220, 130],
         ],
         'logo_s_black' => [
             'filename'       => 'sample-logo-mark-dark.png',
@@ -93,8 +90,7 @@ final class BrandManager
             'extensions'     => ['png'],
             'mime'            => 'image/png',
             'max_size'       => 2 * 1024 * 1024,
-            'min_dimensions' => null,
-            'exact_dimensions' => [53, 53],
+            'min_dimensions' => [40, 40],
         ],
         'logo_s_white' => [
             'filename'       => 'sample-logo-mark-light.png',
@@ -102,8 +98,7 @@ final class BrandManager
             'extensions'     => ['png'],
             'mime'            => 'image/png',
             'max_size'       => 2 * 1024 * 1024,
-            'min_dimensions' => null,
-            'exact_dimensions' => [53, 53],
+            'min_dimensions' => [40, 40],
         ],
         'logo_m_black' => [
             'filename'       => 'sample-logo-horizontal-dark.png',
@@ -111,8 +106,7 @@ final class BrandManager
             'extensions'     => ['png'],
             'mime'            => 'image/png',
             'max_size'       => 2 * 1024 * 1024,
-            'min_dimensions' => null,
-            'exact_dimensions' => [100, 55],
+            'min_dimensions' => [100, 55],
         ],
         'logo_m_white' => [
             'filename'       => 'sample-logo-horizontal-light.png',
@@ -120,8 +114,7 @@ final class BrandManager
             'extensions'     => ['png'],
             'mime'            => 'image/png',
             'max_size'       => 2 * 1024 * 1024,
-            'min_dimensions' => null,
-            'exact_dimensions' => [100, 55],
+            'min_dimensions' => [100, 55],
         ],
         'logo_l_black' => [
             'filename'       => 'sample-logo-login-dark.png',
@@ -129,8 +122,7 @@ final class BrandManager
             'extensions'     => ['png'],
             'mime'            => 'image/png',
             'max_size'       => 2 * 1024 * 1024,
-            'min_dimensions' => null,
-            'exact_dimensions' => [250, 138],
+            'min_dimensions' => [220, 130],
         ],
         'logo_l_white' => [
             'filename'       => 'sample-logo-login-light.png',
@@ -138,8 +130,7 @@ final class BrandManager
             'extensions'     => ['png'],
             'mime'            => 'image/png',
             'max_size'       => 2 * 1024 * 1024,
-            'min_dimensions' => null,
-            'exact_dimensions' => [250, 138],
+            'min_dimensions' => [220, 130],
         ],
     ];
 
@@ -188,19 +179,30 @@ final class BrandManager
         return self::RESOURCE_DEFINITIONS[$resourceName]['mime'] ?? 'image/x-icon';
     }
 
-    private static function hasExpectedImageDimensions(string $resourceName, string $path): bool
+    private static function hasMinimumImageDimensions(string $resourceName, string $path): bool
     {
-        $expected = self::RESOURCE_DEFINITIONS[$resourceName]['exact_dimensions'] ?? null;
-        if ($expected === null) {
+        $definition = self::RESOURCE_DEFINITIONS[$resourceName];
+        $minimum = $definition['min_dimensions'] ?? null;
+        if ($minimum === null) {
             return true;
         }
 
         $imageInfo = @getimagesize($path);
+        if (
+            !is_array($imageInfo)
+            || (int) $imageInfo[0] < $minimum[0]
+            || (int) $imageInfo[1] < $minimum[1]
+        ) {
+            return false;
+        }
 
-        return is_array($imageInfo)
-            && ($imageInfo[2] ?? null) === IMAGETYPE_PNG
-            && (int) $imageInfo[0] === $expected[0]
-            && (int) $imageInfo[1] === $expected[1];
+        $expectedType = match ($definition['mime'] ?? null) {
+            'image/png' => IMAGETYPE_PNG,
+            'image/jpeg' => IMAGETYPE_JPEG,
+            default => null,
+        };
+
+        return $expectedType === null || ($imageInfo[2] ?? null) === $expectedType;
     }
 
     public static function getCurrentResourceFile(string $resourceName): ?string
@@ -211,14 +213,14 @@ final class BrandManager
 
         $resource = self::getImageResources()[$resourceName];
 
-        // Retain old administrator uploads, but do not serve logo files from
-        // older versions when their intrinsic dimensions violate GLPI's
-        // current logo contract. In that case the bundled, correctly-sized
-        // resource is used until the administrator uploads a compliant logo.
+        // Retain administrator uploads, but do not serve files that fall
+        // below GLPI's recommended minimum dimensions. Larger images are valid;
+        // exact width/height equality is deliberately not required. Use the
+        // bundled default when a legacy upload is below the minimum.
         if (
             is_file($resource['current'])
             && is_readable($resource['current'])
-            && self::hasExpectedImageDimensions($resourceName, $resource['current'])
+            && self::hasMinimumImageDimensions($resourceName, $resource['current'])
         ) {
             return $resource['current'];
         }
@@ -226,7 +228,7 @@ final class BrandManager
         if (
             is_file($resource['default'])
             && is_readable($resource['default'])
-            && self::hasExpectedImageDimensions($resourceName, $resource['default'])
+            && self::hasMinimumImageDimensions($resourceName, $resource['default'])
         ) {
             return $resource['default'];
         }
@@ -673,16 +675,6 @@ final class BrandManager
             || ($width * $height) > 40000000
         ) {
             throw new \RuntimeException(sprintf('The uploaded "%s" dimensions are outside the allowed limits.', $resourceName));
-        }
-
-        $exact = $definition['exact_dimensions'] ?? null;
-        if ($exact !== null && ($width !== $exact[0] || $height !== $exact[1])) {
-            throw new \RuntimeException(sprintf(
-                'The "%1$s" image must be exactly %2$dx%3$d pixels.',
-                $resourceName,
-                $exact[0],
-                $exact[1],
-            ));
         }
 
         $minimum = $definition['min_dimensions'];
