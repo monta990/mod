@@ -6,6 +6,38 @@
 {% import 'components/form/fields_macros.html.twig' as fields %}
 
 <div class="container-fluid px-4 mt-3 mod-uibranding-page">
+    <div class="card mb-3 mod-version-card">
+        <div class="card-body py-3">
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <i class="ti ti-brand-github fs-3 text-muted" aria-hidden="true"></i>
+                <strong>{{ __('Installed version', 'mod') }}:</strong>
+                <span class="badge bg-secondary-lt text-secondary">{{ version_check.current }}</span>
+                {% if version_check.check_available %}
+                    <span class="text-muted">{{ __('Latest stable release', 'mod') }}:</span>
+                    <span class="badge {{ version_check.update_available ? 'bg-warning-lt text-warning' : 'bg-success-lt text-success' }}">{{ version_check.latest }}</span>
+                {% endif %}
+                <a href="{{ version_check.releases_url }}" class="btn btn-outline-secondary btn-sm ms-auto"
+                   target="_blank" rel="noopener noreferrer">
+                    <i class="ti ti-brand-github me-1" aria-hidden="true"></i>{{ __('View releases', 'mod') }}
+                </a>
+            </div>
+            {% if version_check.update_available %}
+                <div class="alert alert-warning py-2 mt-3 mb-0 d-flex align-items-center gap-2" role="alert">
+                    <i class="ti ti-download" aria-hidden="true"></i>
+                    <span>{{ __('A new version is available', 'mod') }}: <strong>{{ version_check.latest }}</strong>.</span>
+                </div>
+            {% elseif version_check.installed_is_newer %}
+                <div class="alert alert-secondary py-2 mt-3 mb-0" role="status">
+                    {{ __('Your installed version is newer than the latest stable release published on GitHub.', 'mod') }}
+                </div>
+            {% elseif not version_check.check_available %}
+                <div class="text-muted small mt-2" role="status">
+                    {{ __('GitHub version check is currently unavailable. The plugin will retry automatically later.', 'mod') }}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
     <div class="card mod-main-card">
         <form id="main-form" name="uibranding_form" method="post" action="{{ url }}"
               enctype="multipart/form-data" data-submit-once>

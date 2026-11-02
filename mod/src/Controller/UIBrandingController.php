@@ -75,10 +75,13 @@ final class UIBrandingController extends AbstractController
 
         $branding = new UIBranding();
 
-        return $this->render('@mod/uibranding.html.twig', $branding->getViewData(
-                $baseUrl . '/UIBranding',
-                $baseUrl . '/UIBranding/Asset',
-            ));
+        $viewData = $branding->getViewData(
+            $baseUrl . '/UIBranding',
+            $baseUrl . '/UIBranding/Asset',
+        );
+        $viewData['version_check'] = (new GitHubVersionChecker())->checkLatestVersion();
+
+        return $this->render('@mod/uibranding.html.twig', $viewData);
     }
 
 

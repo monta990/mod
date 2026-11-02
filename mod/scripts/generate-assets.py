@@ -129,15 +129,8 @@ def generate(plugin_root: Path) -> None:
         raise RuntimeError(f'SVG master not found: {svg_path}')
     master = render_master(svg_path)
 
-    main = Image.new('RGBA', (512, 512), (0, 0, 0, 0))
-    main.alpha_composite(make_mark(master, 360), (76, 28))
-    main_draw = ImageDraw.Draw(main)
-    title_font = load_font(48)
-    title = 'UI Branding'
-    title_bounds = main_draw.textbbox((0, 0), title, font=title_font)
-    title_width = title_bounds[2] - title_bounds[0]
-    main_draw.text(((512 - title_width) // 2, 395), title, font=title_font, fill=(16, 37, 83, 255))
-    quantize_png(main, plugin_root / 'logo.png')
+    # Plugin logo is only the symbol: no name, subtitle or version text.
+    quantize_png(make_mark(master, 512), plugin_root / 'logo.png')
 
     assets = {
         'sample-logo-mark.png': make_mark(master, 256, False),

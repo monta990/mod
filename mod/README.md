@@ -56,18 +56,18 @@ This keeps the expanded/collapsed menu and login behavior aligned with GLPI's ow
 
 The repository keeps the editable vector master at `resources/images/sample-ribbon-mark.svg`. During release packaging, `scripts/generate-assets.py` creates:
 
-- `logo.png` in the plugin root.
+- Icon-only `logo.png` in the plugin root (symbol only; no wordmark, subtitle or version).
 - Transparent square, horizontal and login logo PNGs, each with light- and dark-surface variants.
 - `sample-icon.ico`, containing 16, 32, 48 and 64 pixel sizes.
 - A neutral 1920×1080 `background.jpg` for the optional login background.
 
-The generated files are placed in `resources/images/` in the installation ZIP. Fresh installations therefore show demonstration artwork until an administrator uploads their own brand assets. End users do not need Python or image-generation dependencies; those are needed only to build the release ZIP.
+The generated files are placed in `resources/images/` in the installation ZIP. Fresh installations therefore show demonstration artwork until an administrator uploads their own brand assets. The horizontal and login sample wordmarks contain only the text `UI Branding`. End users do not need Python or image-generation dependencies; those are needed only to build the release ZIP.
 
 The design palette is indigo (`#314FA8`), deep navy (`#102553`), amber (`#FFC62E`) and orange (`#F08B13`).
 
 ## Data and uninstall
 
-The plugin does not migrate settings from unrelated earlier plugin generations. Its current settings and uploads remain in `GLPI_PLUGIN_DOC_DIR/mod/` when the plugin is upgraded.
+Plugin settings and administrator uploads remain in `GLPI_PLUGIN_DOC_DIR/mod/` when the plugin is upgraded. The install/update hook preserves an existing `settings.ini` and copies uploads from the previous GLPI-derived filenames to the current neutral filenames without deleting the originals or overwriting files that already use the new names. Other files in the uploads directory are left untouched. This migration is idempotent and is not a migration from a different plugin ID.
 
 Uninstalling the plugin removes this plugin-owned data directory, including uploaded images and settings. Back up that directory before uninstalling if the branding configuration must be retained.
 

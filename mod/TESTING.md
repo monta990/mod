@@ -27,7 +27,7 @@ GLPI 12's current published requirements specify PHP 8.3 or newer. The plugin th
 - [ ] Disable/re-enable without changing GLPI core files.
 - [ ] On a disposable system, uninstall and verify only `GLPI_PLUGIN_DOC_DIR/mod/` is removed.
 
-**Version transition:** the release uses plugin version `12.0.0`. When moving from a previously installed higher plugin version, GLPI may mark the plugin as requiring an update. Test the transition on a DB copy first. The install hook is idempotent and preserves existing plugin configuration and uploads; do not uninstall/reinstall when data must be kept.
+**Version transition:** GLPI uses `plugin_mod_install()` for both initial installation and plugin updates. The hook is idempotent: it does not rewrite an existing `settings.ini`, maps previous uploaded logo/favicon filenames to the new neutral names by copying (not moving), does not overwrite already-migrated uploads, leaves other files untouched and records a migration marker. Do not uninstall/reinstall when data must be kept; explicit uninstall intentionally removes `GLPI_PLUGIN_DOC_DIR/mod/`. Run `php scripts/test-upgrade-preservation.php` to verify this behavior before release.
 
 ## Demonstration branding assets
 
@@ -35,7 +35,7 @@ GLPI 12's current published requirements specify PHP 8.3 or newer. The plugin th
 - [ ] Verify the sample icon and horizontal/square logo variants display correctly in the configuration UI.
 - [ ] Verify light and dark logo variants on the corresponding GLPI palettes.
 - [ ] Confirm a fresh installation falls back to the bundled sample artwork.
-- [ ] Confirm administrator uploads override the bundled sample files without modifying plugin code.
+- [ ] Confirm administrator uploads override the bundled sample files without modifying plugin code.\n- [ ] Run `php scripts/test-upgrade-preservation.php` and confirm settings, existing uploads and unrelated files survive a repeated update.
 
 ## Branding behavior
 
@@ -56,7 +56,7 @@ GLPI 12's current published requirements specify PHP 8.3 or newer. The plugin th
 - [ ] Submit multiple files with one invalid file; verify previous files and settings remain unchanged.
 - [ ] Force a file-write failure on staging; verify previous files are restored, or recovery data is retained and logged.
 
-## Routing, permissions and cache
+## GitHub version check\n\n- [ ] Verify the configuration page shows the installed version.\n- [ ] Publish a higher stable GitHub release and confirm the page shows an update alert and a link to the release list.\n- [ ] Confirm draft and pre-release tags are ignored.\n- [ ] Confirm a network failure does not affect page loading, settings or uploads and is retried after the short failure cache.\n- [ ] Confirm a successful result is cached for six hours.\n\n## Routing, permissions and cache
 
 - [ ] Test normal `plugins/mod` installation.
 - [ ] Test Marketplace installation if used by the deployment.
