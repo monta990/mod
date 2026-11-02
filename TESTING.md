@@ -23,7 +23,7 @@ The plugin declares GLPI `>=12.0.0 <12.1.0` and PHP `>=8.2`. The release CI lint
 - [ ] Disable and re-enable the plugin; confirm no core files are modified.
 - [ ] Uninstall only on a disposable instance and confirm that only `GLPI_PLUGIN_DOC_DIR/mod/` is removed.
 
-**Version baseline note:** this release intentionally reports plugin version `12.0.0`. GLPI 12 stores the previously installed plugin version; changing from a build that reported `12.0.44` to this baseline will be detected as a plugin version change and may place the plugin in the update-required state. Test the exact transition on a database copy before deploying. The installer is idempotent and keeps an existing `settings.ini` and `uploads/` directory; do not use an uninstall/reinstall path if existing branding data must be preserved.
+**Version baseline note:** this release intentionally reports plugin version `12.0.0`. GLPI 12 stores the previously installed plugin version; changing from a previously installed build that reported a higher plugin version to this baseline will be detected as a plugin version change and may place the plugin in the update-required state. Test the exact transition on a database copy before deploying. The installer is idempotent and keeps an existing `settings.ini` and `uploads/` directory; do not use an uninstall/reinstall path if existing branding data must be preserved.
 
 ## Branding behavior
 
