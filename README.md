@@ -1,4 +1,4 @@
-# UI Branding 12.0.44
+# UI Branding 12.0.0
 
 Visual customization plugin for GLPI 12.
 
