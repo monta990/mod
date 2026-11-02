@@ -17,7 +17,7 @@ UI Branding customizes the GLPI 12 interface without modifying GLPI core files.
 ## Compatibility
 
 - GLPI 12.0.x, from 12.0.0 up to (but not including) 12.1.0.
-- PHP 8.2 or newer.
+- PHP 8.3 or newer.
 - No Composer installation or plugin-local `vendor/` directory is required.
 
 ## Installation
@@ -37,7 +37,7 @@ Administrator settings and uploaded files are stored under:
 
 `GLPI_PLUGIN_DOC_DIR/mod/`
 
-Uploaded resources are stored in `uploads/`. Bundled fallback images remain in the installed plugin under `resources/images/`; they are not copied to persistent storage. Asset routes expose only the resource identifiers declared by the plugin.
+Uploaded resources are stored in `uploads/`. Bundled fallback images remain in the installed plugin under `resources/imagenes/`; they are not copied to persistent storage. Asset routes expose only the resource identifiers declared by the plugin.
 
 The configuration Controller requires the GLPI `config` right with `UPDATE`. GLPI 12 applies its built-in origin-based CSRF protection to unsafe Controller requests; the plugin does not implement a separate token mechanism.
 
@@ -49,7 +49,7 @@ When theme-aware logos are enabled, the plugin supplies GLPI's native variables:
 - `--glpi-logo-dark` and `--glpi-logo-dark-reduced` for black expanded/collapsed navigation logos.
 - `--glpi-logo-dark-login` and `--glpi-logo-light-login` for the login logo in the corresponding GLPI palette.
 
-This keeps the expanded/collapsed menu and login behavior aligned with GLPI's own theme implementation instead of targeting internal logo elements directly. Legacy gray theme-logo uploads are left untouched in persistent storage but are not selected by the GLPI 12 light/dark palette mapping.
+This keeps the expanded/collapsed menu and login behavior aligned with GLPI's own theme implementation instead of targeting internal logo elements directly. The bundled logo and favicon files are original, neutral demonstration assets. They do not contain GLPI or other third-party product marks.
 
 ## Data and uninstall
 
@@ -58,5 +58,7 @@ The plugin does not migrate settings from unrelated earlier plugin generations. 
 Uninstalling the plugin removes this plugin-owned data directory, including uploaded images and settings. Back up that directory before uninstalling if the branding configuration must be retained.
 
 ## Release validation
+
+All plugin files, bundled resources and documentation are stored inside the repository's `mod/` directory. GitHub Actions configuration remains outside this plugin directory as repository automation only.
 
 See [TESTING.md](TESTING.md) for the GLPI 12.0.0/12.0.1 manual test matrix and release checks.
