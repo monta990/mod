@@ -1,6 +1,6 @@
 <?php
 
-use GlpiPlugin\\Mod\\BrandManager;
+use GlpiPlugin\Mod\BrandManager;
 
 /**
  * Install or update UI Branding.
