@@ -8,6 +8,7 @@ use Glpi\Error\ErrorHandler;
 use GlpiPlugin\Mod\Paths;
 use GlpiPlugin\Mod\Service\GitHubVersionChecker;
 use GlpiPlugin\Mod\UIBranding;
+use Config;
 use Session;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,7 +22,7 @@ final class UIBrandingController extends AbstractController
     #[Route('/UIBranding', name: 'mod_uibranding', methods: ['GET', 'POST'])]
     public function __invoke(Request $request): Response
     {
-        if (!Session::haveRight('config', UPDATE)) {
+        if (!Session::haveRight(Config::$rightname, UPDATE)) {
             throw new AccessDeniedHttpException();
         }
 

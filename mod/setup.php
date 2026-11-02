@@ -31,6 +31,19 @@ function plugin_init_mod(): void
 /**
  * Return plugin metadata and supported platform versions.
  */
+/**
+ * @return array{
+ *   name: string,
+ *   version: string,
+ *   author: string,
+ *   license: string,
+ *   homepage: string,
+ *   requirements: array{
+ *     glpi: array{min: string, max: string},
+ *     php: array{min: string}
+ *   }
+ * }
+ */
 function plugin_version_mod(): array
 {
     return [

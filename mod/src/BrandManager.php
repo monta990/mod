@@ -13,7 +13,9 @@ use Toolbox;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 if (!defined('GLPI_ROOT')) {
-    die("Sorry. You can't access directly to this file");
+    http_response_code(403);
+    header('Content-Type: text/plain; charset=UTF-8');
+    return;
 }
 
 final class BrandManager
@@ -149,6 +151,9 @@ final class BrandManager
         return dirname(self::getResourceDir());
     }
 
+    /**
+     * @return array<string, array{default: string, current: string, accept: list<string>}>
+     */
     public static function getImageResources(): array
     {
         $resources = [];
@@ -202,7 +207,7 @@ final class BrandManager
             default => null,
         };
 
-        return $expectedType === null || ($imageInfo[2] ?? null) === $expectedType;
+        return $expectedType === null || $imageInfo[2] === $expectedType;
     }
 
     public static function getCurrentResourceFile(string $resourceName): ?string
@@ -312,6 +317,10 @@ final class BrandManager
         }
     }
 
+    /**
+     * @param array<string, mixed> $values
+     * @return array{title: string, login: string, theme_logos: string, show_logos: string, favicon: string}
+     */
     private static function normalizeConfig(array $values): array
     {
         return [
@@ -336,6 +345,9 @@ final class BrandManager
         return (string) $value === '1' ? '1' : '0';
     }
 
+    /**
+     * @return array{title: string, login: string, theme_logos: string, show_logos: string, favicon: string}
+     */
     private static function readConfigFile(): array
     {
         if (!is_file(self::CONFIG_FILE)) {
@@ -346,6 +358,9 @@ final class BrandManager
         return is_array($values) ? self::normalizeConfig($values) : self::DEFAULT_CONFIG;
     }
 
+    /**
+     * @param array<string, mixed> $values
+     */
     private static function writeConfigFile(array $values): void
     {
         self::ensureDir(self::FILES_DIR);
@@ -399,6 +414,9 @@ final class BrandManager
         }
     }
 
+    /**
+     * @return array{title: string, login: string, theme_logos: string, show_logos: string, favicon: string}
+     */
     public static function getConfiguration(): array
     {
         return self::readConfigFile();
@@ -515,11 +533,17 @@ final class BrandManager
         }
     }
 
+    /**
+     * @param array<string, mixed> $values
+     */
     public function setConfiguration(array $values): void
     {
         self::writeConfigFile(array_merge(self::readConfigFile(), $values));
     }
 
+    /**
+     * @param array<string, mixed> $values
+     */
     public function updateConfiguration(array $values): void
     {
         $current = self::readConfigFile();
@@ -661,7 +685,7 @@ final class BrandManager
 
         $imageInfo = @getimagesize($path);
         $expectedType = $extension === 'png' ? IMAGETYPE_PNG : IMAGETYPE_JPEG;
-        if (!is_array($imageInfo) || ($imageInfo[2] ?? null) !== $expectedType) {
+        if (!is_array($imageInfo) || $imageInfo[2] !== $expectedType) {
             throw new \RuntimeException(sprintf('The uploaded "%s" is not a valid supported image.', $resourceName));
         }
 

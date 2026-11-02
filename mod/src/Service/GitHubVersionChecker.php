@@ -5,7 +5,9 @@ namespace GlpiPlugin\Mod\Service;
 use GlpiPlugin\Mod\BrandManager;
 
 if (!defined('GLPI_ROOT')) {
-    die("Sorry. You can't access directly to this file");
+    http_response_code(403);
+    header('Content-Type: text/plain; charset=UTF-8');
+    return;
 }
 
 final class GitHubVersionChecker
@@ -175,6 +177,7 @@ final class GitHubVersionChecker
         return BrandManager::FILES_DIR . '/github-version-cache.json';
     }
 
+    /** @return array<string, mixed> */
     private function readCache(): array
     {
         $path = $this->getCachePath();
@@ -196,6 +199,7 @@ final class GitHubVersionChecker
         return is_array($data) ? $data : [];
     }
 
+    /** @param array<string, mixed> $data */
     private function writeCache(array $data): void
     {
         $path = $this->getCachePath();

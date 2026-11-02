@@ -5,7 +5,9 @@ namespace GlpiPlugin\Mod;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 if (!defined('GLPI_ROOT')) {
-    die("Sorry. You can't access directly to this file");
+    http_response_code(403);
+    header('Content-Type: text/plain; charset=UTF-8');
+    return;
 }
 
 final class UIBranding
@@ -25,6 +27,10 @@ final class UIBranding
         'logo_l',
     ];
 
+    /**
+     * @param array<string, mixed> $data
+     * @param array<string, mixed> $files
+     */
     public function save(array $data, array $files): void
     {
         $manager = new BrandManager();
@@ -68,6 +74,7 @@ final class UIBranding
         $CFG_GLPI['app_name'] = $title !== '' ? $title : 'GLPI';
     }
 
+    /** @return array<string, mixed> */
     public function getViewData(string $url, string $previewUrl): array
     {
         $config = BrandManager::getConfiguration();
