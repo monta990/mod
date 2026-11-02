@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+<defs>
+  <linearGradient id="indigo" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#314FA8"/>
+    <stop offset="1" stop-color="#102553"/>
+  </linearGradient>
+  <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#FFC62E"/>
+    <stop offset="1" stop-color="#F08B13"/>
+  </linearGradient>
+  <linearGradient id="goldFold" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#D9780B"/>
+    <stop offset="1" stop-color="#F5A51C"/>
+  </linearGradient>
+</defs>
+<path d="M70 252 L267 84 C307 50 352 48 390 81 L440 125 C454 138 453 151 439 164 L394 202 C382 212 370 210 358 199 L333 176 C319 164 307 166 293 178 L137 311 C121 325 104 324 89 309 L67 287 C53 273 55 264 70 252 Z" fill="url(#indigo)"/>
+<path d="M333 176 L394 202 C382 212 370 210 358 199 L333 176 C319 164 307 166 293 178 L256 210 L304 154 Z" fill="#0B1B3D" opacity=".68"/>
+<path d="M125 319 L302 167 C317 154 332 154 347 167 L439 245 C454 258 452 273 437 286 L263 433 C224 466 181 463 143 435 L72 382 C56 370 56 354 72 340 L112 305 C124 295 137 297 150 308 L182 336 L215 365 C228 376 242 375 255 364 L382 256 L345 224 L169 373 L125 343 C114 335 113 329 125 319 Z" fill="url(#gold)"/>
+<path d="M125 319 L182 336 L215 365 C228 376 242 375 255 364 L294 331 L244 389 C229 402 212 404 196 392 L125 343 C114 335 113 329 125 319 Z" fill="url(#goldFold)" opacity=".92"/>
+</svg>
