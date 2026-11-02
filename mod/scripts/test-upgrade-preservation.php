@@ -18,7 +18,7 @@ if (!mkdir($uploads, 0750, true)) {
 }
 
 $settingsPath = $testRoot . '/mod/settings.ini';
-$originalSettings = "title=\\"Company identity\\"\\nlogin=\\"1\\"\\ntheme_logos=\\"1\\"\\nshow_logos=\\"1\\"\\nfavicon=\\"1\\"\\n";
+$originalSettings = "title=\"Company identity\"\nlogin=\"1\"\ntheme_logos=\"1\"\nshow_logos=\"1\"\nfavicon=\"1\"\n";
 if (file_put_contents($settingsPath, $originalSettings) === false) {
     throw new RuntimeException('Unable to create test settings.');
 }
@@ -41,7 +41,7 @@ foreach ($legacyFiles as $legacyName => $currentName) {
 }
 file_put_contents($uploads . '/customer-extra.bin', 'preserve-this-file');
 
-$manager = new \\GlpiPlugin\\Mod\\BrandManager();
+$manager = new \GlpiPlugin\Mod\BrandManager();
 $manager->install();
 
 if (file_get_contents($settingsPath) !== $originalSettings) {
@@ -96,4 +96,4 @@ $removeDirectory = static function (string $directory) use (&$removeDirectory): 
 };
 $removeDirectory($testRoot);
 
-fwrite(STDOUT, "Upgrade preservation test passed: settings and previous uploads remain intact.\\n");
+fwrite(STDOUT, "Upgrade preservation test passed: settings and previous uploads remain intact.\n");
