@@ -50,13 +50,13 @@ if unzip -Z1 "$DIST/mod-12.0.0.zip" | grep -Eq '^mod/(scripts|devtools)/'; then
     exit 1
 fi
 
-if unzip -Z1 "$DIST/mod-12.0.0.zip" | grep -Ei '\.(svg|py|sh)$'; then
+if unzip -Z1 "$DIST/mod-12.0.0.zip" | grep -Eiq '\.(svg|py|sh)$'; then
     echo "Source artwork and build scripts must not be included in the plugin ZIP." >&2
     exit 1
 fi
 
 # Only the two administrator-facing Markdown guides are allowed in the ZIP.
-if unzip -Z1 "$DIST/mod-12.0.0.zip" | grep -Eiq '\.md$' | grep -Evq '^mod/(README|TESTING)\.md$'; then
+if unzip -Z1 "$DIST/mod-12.0.0.zip" | grep -Ei '\.md$' | grep -Evq '^mod/(README|TESTING)\.md$'; then
     echo "Unexpected development Markdown found in the release archive." >&2
     exit 1
 fi
