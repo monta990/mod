@@ -60,6 +60,8 @@ $required = [
     'hook.php',
     'mod.xml',
     'LICENSE.txt',
+    'README.md',
+    'TESTING.md',
     'logo.png',
     'src/BrandManager.php',
     'src/Service/GitHubVersionChecker.php',
