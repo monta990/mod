@@ -57,13 +57,9 @@ def make_light_mark(master: Image.Image) -> Image.Image:
             if blue >= red and blue >= green:
                 pixels[x, y] = (248, 250, 255, alpha)
             else:
-                # Lift the orange/gold folds while preserving a warm identity.
-                pixels[x, y] = (
-                    min(255, int(red * 1.08)),
-                    min(255, int(green * 1.10)),
-                    min(255, int(blue * 1.12)),
-                    alpha,
-                )
+                # Preserve the amber fold shape but lift its luminance enough
+                # to remain distinguishable on the dark sidebar.
+                pixels[x, y] = (255, 213, 91, alpha)
 
     return image
 
@@ -87,7 +83,7 @@ def validate_light_mark_contrast(image: Image.Image) -> float:
     """Validate opaque mark pixels against the dark-theme sidebar color."""
     background_luminance = relative_luminance(DARK_THEME_MARK_BACKGROUND)
     samples = []
-    for red, green, blue, alpha in image.getdata():
+    for red, green, blue, alpha in image.get_flattened_data():
         if alpha >= 240:
             luminance = relative_luminance((red, green, blue))
             samples.append((luminance + 0.05) / (background_luminance + 0.05))
