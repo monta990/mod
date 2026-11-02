@@ -17,7 +17,8 @@ UI Branding customizes the GLPI 12 interface without modifying GLPI core files.
 ## Compatibility
 
 - GLPI 12.0.x, from 12.0.0 up to (but not including) 12.1.0.
-- PHP 8.3 or newer.
+- PHP 8.3 or newer (the published minimum for GLPI 12).
+- PHP 8.5 is included in stable CI checks; PHP 8.6 is tested as a non-blocking pre-release/nightly job only.
 - No Composer installation or plugin-local `vendor/` directory is required.
 
 ## Installation
