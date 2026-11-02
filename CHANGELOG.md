@@ -2,6 +2,17 @@
 
 All notable changes to UI Branding are documented here.
 
+## [12.0.1] - 2026-11-02
+
+### Security
+- Remove upload-driven DOM URL sinks from preview handling. Upload selection is represented by a safe status container; file data is never assigned to DOM URL attributes. The favicon script reuses the trusted server-rendered link instead of copying a DOM-derived URL.
+
+### Fixed
+- Replace dynamic image preview elements with inert upload-status containers and add regression guards against dynamic URL and HTML insertion sinks.
+
+### Changed
+- Update plugin metadata, translation catalog metadata, package validation, and release automation for numeric version/tag `12.0.1` (without a `v` prefix).
+
 ## [12.0.0] - 2026-11-01
 
 ### Added

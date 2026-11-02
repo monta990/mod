@@ -6,7 +6,7 @@ UI Branding customizes the GLPI 12 interface without changing GLPI core files.
 
 - Custom application title and optional login background.
 - Standard and theme-aware logos for navigation and the login page.
-- Custom favicon and live image previews.
+- Custom favicon and safe upload-selection status.
 - Administrator-only configuration with validated uploads.
 - A GitHub latest-stable-release check on the configuration page, cached for six hours.
 - Upgrade-safe preservation of administrator settings and previously uploaded images.
@@ -33,10 +33,12 @@ Plugin updates retain `GLPI_PLUGIN_DOC_DIR/mod/settings.ini` and the `uploads/` 
 
 - `mod/` contains the complete plugin, translations, resources, package documentation and build/validation scripts.
 - `.github/` contains repository automation.
-- The root README, LICENSE and CHANGELOG keep project information visible on GitHub. Plugin-specific documentation copies remain inside `mod/` and are included in the installation package.
+- The root README, LICENSE, CHANGELOG and RELEASE policy keep project information visible on GitHub. Plugin-specific documentation copies remain inside `mod/` and are included in the installation package.
 
 ## Installation
 
 Download the release ZIP and install it through **Setup → Plugins**. The ZIP contains a single top-level `mod/` folder. Install and enable **UI Branding**, then open its configuration page.
+
+Release tags use the numeric version only (for example, `12.0.1`), with no leading `v`. This is the standard convention across the maintained GLPI plugins; see [release policy](RELEASE.md).
 
 See the [plugin documentation](mod/README.md), [test plan](mod/TESTING.md), [changelog](CHANGELOG.md) and [license](LICENSE).

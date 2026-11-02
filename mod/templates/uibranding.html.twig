@@ -99,9 +99,7 @@
                                 </div>
                             </div>
                             <div class="col-12 col-xl-6 text-center">
-                                <img id="preview_background" class="img-fluid mod-preview-background"
-                                     src="{{ preview_url }}/background"
-                                     alt="{{ __('Background', 'mod') }}" />
+                                <div id="preview_background" class="mod-preview-background" role="status" aria-live="polite" hidden></div>
                             </div>
 
                             <div class="col-12"><hr class="my-2" /></div>
@@ -118,9 +116,7 @@
                                 </div>
                             </div>
                             <div class="col-12 col-xl-6 text-center">
-                                <img id="preview_favicon" class="mod-preview-favicon"
-                                     src="{{ preview_url }}/favicon"
-                                     alt="{{ __('Favicon', 'mod') }}" />
+                                <div id="preview_favicon" class="mod-preview-favicon" role="status" aria-live="polite" hidden></div>
                             </div>
                         </div>
                     </div>
@@ -152,9 +148,7 @@
                                             </div>
                                         </div>
                                         <div class="col-12 col-xl-5 text-center">
-                                            <img id="preview_{{ logo.name }}" class="img-fluid mod-preview-logo"
-                                                 src="{{ preview_url }}/{{ logo.name }}"
-                                                 alt="{{ logo.label }}" />
+                                            <div id="preview_{{ logo.name }}" class="mod-preview-logo" role="status" aria-live="polite" hidden></div>
                                         </div>
                                     </div>
                                 </div>
@@ -190,9 +184,7 @@
                                             </div>
                                         </div>
                                         <div class="col-12 col-xl-5 text-center">
-                                            <img id="preview_{{ logo.name }}" class="img-fluid mod-preview-logo"
-                                                 src="{{ preview_url }}/{{ logo.name }}"
-                                                 alt="{{ logo.label }}" />
+                                            <div id="preview_{{ logo.name }}" class="mod-preview-logo" role="status" aria-live="polite" hidden></div>
                                         </div>
                                     </div>
                                 </div>
@@ -259,30 +251,43 @@
         color: #fff;
     }
 
-    .mod-preview-background {
+    .mod-preview-background,
+    .mod-preview-logo,
+    .mod-preview-favicon {
         display: block;
         max-width: 100%;
-        width: auto;
-        max-height: 220px;
         margin-inline: auto;
-        object-fit: contain;
+        padding: .75rem;
+        color: var(--tblr-body-color);
+        line-height: 1.4;
+        text-align: center;
+        overflow-wrap: anywhere;
+        border: 1px dashed var(--tblr-border-color);
+        border-radius: var(--tblr-border-radius);
+        background-color: var(--tblr-bg-surface-secondary);
+    }
+
+    .mod-preview-background[hidden],
+    .mod-preview-logo[hidden],
+    .mod-preview-favicon[hidden] {
+        display: none !important;
+    }
+
+    .mod-preview-background {
+        width: 100%;
+        min-height: 90px;
+        max-height: 220px;
     }
 
     .mod-preview-logo {
-        display: block;
-        max-width: 100%;
-        width: auto;
-        max-height: 180px;
-        margin-inline: auto;
-        object-fit: contain;
+        width: 100%;
+        min-height: 72px;
+        max-height: 150px;
     }
 
     .mod-preview-favicon {
-        display: block;
-        width: 64px;
-        height: 64px;
-        image-rendering: auto;
-        margin-inline: auto;
+        width: 100%;
+        min-height: 64px;
     }
 
     @media (min-width: 1200px) {
