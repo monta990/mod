@@ -11,8 +11,8 @@ PACKAGE_ROOT="$WORK/mod"
 rm -rf "$WORK"
 mkdir -p "$PACKAGE_ROOT"
 
-# Ship only runtime files. Repository documentation and development helpers
-# stay at the repository root and are not part of the GLPI plugin ZIP.
+# Ship runtime files. Administrator documentation is copied explicitly after
+# source/build cleanup so only the two intended Markdown guides are packaged.
 cp -a "$ROOT/LICENSE.txt" "$ROOT/mod.xml" "$ROOT/setup.php" "$ROOT/hook.php" "$PACKAGE_ROOT/"
 cp -a "$ROOT/src" "$ROOT/public" "$ROOT/templates" "$ROOT/resources" "$ROOT/locales" "$PACKAGE_ROOT/"
 
@@ -25,10 +25,13 @@ for po in "$PACKAGE_ROOT"/locales/*.po; do
     msgfmt --check --check-format -o "${po%.po}.mo" "$po"
 done
 
-# The SVG is a source/build asset. Use it to generate the PNG/ICO files, then
-# remove it and all Markdown/build files from the final runtime package.
+# The SVG is a source/build asset. Generate raster files, then remove source
+# artwork, resource notes and development tooling from the runtime package.
 python3 "$ROOT/scripts/generate-assets.py" "$PACKAGE_ROOT"
 find "$PACKAGE_ROOT" -type f \( -iname '*.svg' -o -iname '*.md' -o -iname '*.py' -o -iname '*.sh' \) -delete
+
+# Include the administrator documentation referenced by the repository README.
+cp -a "$ROOT/README.md" "$ROOT/TESTING.md" "$PACKAGE_ROOT/"
 
 rm -f "$DIST/mod-12.0.0.zip"
 (
@@ -47,10 +50,18 @@ if unzip -Z1 "$DIST/mod-12.0.0.zip" | grep -Eq '^mod/(scripts|devtools)/'; then
     exit 1
 fi
 
-if unzip -Z1 "$DIST/mod-12.0.0.zip" | grep -Eiq '\.(svg|md|py|sh)$'; then
-    echo "Source artwork, documentation and build scripts must not be included in the plugin ZIP." >&2
+if unzip -Z1 "$DIST/mod-12.0.0.zip" | grep -Eiq '\.(svg|py|sh)$'; then
+    echo "Source artwork and build scripts must not be included in the plugin ZIP." >&2
     exit 1
 fi
+
+# Only the two administrator-facing Markdown guides are allowed in the ZIP.
+if unzip -Z1 "$DIST/mod-12.0.0.zip" | grep -Eiq '\.md$' | grep -Evq '^mod/(README|TESTING)\.md$'; then
+    echo "Unexpected development Markdown found in the release archive." >&2
+    exit 1
+fi
+unzip -Z1 "$DIST/mod-12.0.0.zip" | grep -qx 'mod/README.md'
+unzip -Z1 "$DIST/mod-12.0.0.zip" | grep -qx 'mod/TESTING.md'
 
 # Confirm required runtime branding assets are present.
 unzip -Z1 "$DIST/mod-12.0.0.zip" | grep -qx 'mod/logo.png'
