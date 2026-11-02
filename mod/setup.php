@@ -45,7 +45,7 @@ function plugin_version_mod(): array
                 'max' => PLUGIN_MOD_MAX_GLPI_VERSION,
             ],
             'php' => [
-                'min' => '8.2',
+                'min' => '8.3',
             ],
         ],
     ];
