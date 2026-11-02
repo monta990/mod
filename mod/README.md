@@ -1,4 +1,4 @@
-# UI Branding 12.0.0
+# UI Branding
 
 UI Branding customizes the GLPI 12 interface without modifying GLPI core files.
 
@@ -38,7 +38,7 @@ Administrator settings and uploaded files are stored under:
 
 `GLPI_PLUGIN_DOC_DIR/mod/`
 
-Uploaded resources are stored in `uploads/`. Bundled fallback images remain in the installed plugin under `resources/imagenes/`; they are not copied to persistent storage. Asset routes expose only the resource identifiers declared by the plugin.
+Uploaded resources are stored in `uploads/`. Bundled fallback images remain in the installed plugin under `resources/images/`; they are not copied to persistent storage. Asset routes expose only the resource identifiers declared by the plugin.
 
 The configuration Controller requires the GLPI `config` right with `UPDATE`. GLPI 12 applies its built-in origin-based CSRF protection to unsafe Controller requests; the plugin does not implement a separate token mechanism.
 
@@ -54,14 +54,14 @@ This keeps the expanded/collapsed menu and login behavior aligned with GLPI's ow
 
 ## Bundled sample artwork
 
-The repository keeps the editable vector master at `resources/imagenes/sample-ribbon-mark.svg`. During release packaging, `scripts/generate-assets.py` creates:
+The repository keeps the editable vector master at `resources/images/sample-ribbon-mark.svg`. During release packaging, `scripts/generate-assets.py` creates:
 
 - `logo.png` in the plugin root.
 - Transparent square, horizontal and login logo PNGs, each with light- and dark-surface variants.
 - `sample-icon.ico`, containing 16, 32, 48 and 64 pixel sizes.
 - A neutral 1920×1080 `background.jpg` for the optional login background.
 
-The generated files are placed in `resources/imagenes/` in the installation ZIP. Fresh installations therefore show demonstration artwork until an administrator uploads their own brand assets. End users do not need Python or image-generation dependencies; those are needed only to build the release ZIP.
+The generated files are placed in `resources/images/` in the installation ZIP. Fresh installations therefore show demonstration artwork until an administrator uploads their own brand assets. End users do not need Python or image-generation dependencies; those are needed only to build the release ZIP.
 
 The design palette is indigo (`#314FA8`), deep navy (`#102553`), amber (`#FFC62E`) and orange (`#F08B13`).
 

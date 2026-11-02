@@ -72,19 +72,19 @@ $required = [
     'public/uibranding.js',
     'public/favicon.js',
     'resources/modifiers.ini',
-    'resources/imagenes/sample-ribbon-mark.svg',
-    'resources/imagenes/ASSET_README.md',
-    'resources/imagenes/background.jpg',
-    'resources/imagenes/sample-icon.ico',
-    'resources/imagenes/sample-logo-mark.png',
-    'resources/imagenes/sample-logo-mark-dark.png',
-    'resources/imagenes/sample-logo-mark-light.png',
-    'resources/imagenes/sample-logo-horizontal.png',
-    'resources/imagenes/sample-logo-horizontal-dark.png',
-    'resources/imagenes/sample-logo-horizontal-light.png',
-    'resources/imagenes/sample-logo-login.png',
-    'resources/imagenes/sample-logo-login-dark.png',
-    'resources/imagenes/sample-logo-login-light.png',
+    'resources/images/sample-ribbon-mark.svg',
+    'resources/images/ASSET_README.md',
+    'resources/images/background.jpg',
+    'resources/images/sample-icon.ico',
+    'resources/images/sample-logo-mark.png',
+    'resources/images/sample-logo-mark-dark.png',
+    'resources/images/sample-logo-mark-light.png',
+    'resources/images/sample-logo-horizontal.png',
+    'resources/images/sample-logo-horizontal-dark.png',
+    'resources/images/sample-logo-horizontal-light.png',
+    'resources/images/sample-logo-login.png',
+    'resources/images/sample-logo-login-dark.png',
+    'resources/images/sample-logo-login-light.png',
 ];
 
 foreach ($required as $relative) {
@@ -92,10 +92,10 @@ foreach ($required as $relative) {
 }
 
 $expect(basename($root) === 'mod', 'All plugin files must be located inside the mod/ directory.');
-$expect(is_dir($root . '/resources/imagenes'), 'Bundled images must be stored in resources/imagenes/.');
-$expect(!is_dir($root . '/resources/images'), 'Do not keep an English-named resources/images directory.');
+$expect(is_dir($root . '/resources/images'), 'Bundled images must be stored in resources/images/.');
+$expect(!is_dir($root . '/resources/imagenes'), 'Do not keep the obsolete resources/imagenes directory.');
 foreach (['favicon.ico', 'logo-G-100.png', 'logo-GLPI-100.png', 'logo-GLPI-250.png'] as $forbidden) {
-    $expect(!is_file($root . '/resources/imagenes/' . $forbidden), sprintf('Third-party-branded sample resource still exists: %s', $forbidden));
+    $expect(!is_file($root . '/resources/images/' . $forbidden), sprintf('Third-party-branded sample resource still exists: %s', $forbidden));
 }
 $expect(!is_dir($root . '/front'), 'The modern GLPI 12 plugin must not add legacy front/ entry points.');
 $expect(!is_dir($root . '/ajax'), 'The modern GLPI 12 plugin must not add legacy ajax/ entry points.');
