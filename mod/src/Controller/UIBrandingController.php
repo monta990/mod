@@ -33,10 +33,10 @@ final class UIBrandingController extends AbstractController
                 try {
                     $cacheManager = new CacheManager();
                     if ($cacheManager->resetAllCaches()) {
-                        Session::addMessageAfterRedirect(__('GLPI cache cleared successfully.', 'mod'));
+                        Session::addMessageAfterRedirect(self::escapeFlashMessage(__('GLPI cache cleared successfully.', 'mod')));
                     } else {
                         Session::addMessageAfterRedirect(
-                            __('Unable to clear the GLPI cache completely.', 'mod'),
+                            self::escapeFlashMessage(__('Unable to clear the GLPI cache completely.', 'mod')),
                             true,
                             WARNING,
                         );
@@ -44,7 +44,7 @@ final class UIBrandingController extends AbstractController
                 } catch (Throwable $e) {
                     ErrorHandler::logCaughtException($e);
                     Session::addMessageAfterRedirect(
-                        __('Unable to clear the GLPI cache. Check the GLPI logs for more information.', 'mod'),
+                        self::escapeFlashMessage(__('Unable to clear the GLPI cache. Check the GLPI logs for more information.', 'mod')),
                         true,
                         ERROR,
                     );
@@ -60,13 +60,13 @@ final class UIBrandingController extends AbstractController
                 );
 
                 Session::addMessageAfterRedirect(
-                    __('UI Branding settings saved successfully. It is recommended to clear both the GLPI cache and your browser cache to apply all changes.', 'mod')
+                    self::escapeFlashMessage(__('UI Branding settings saved successfully. It is recommended to clear both the GLPI cache and your browser cache to apply all changes.', 'mod'))
                 );
             } catch (Throwable $e) {
                 ErrorHandler::logCaughtException($e);
 
                 Session::addMessageAfterRedirect(
-                    __('Unable to save UI Branding settings. Check the GLPI logs for more information.', 'mod'),
+                    self::escapeFlashMessage(__('Unable to save UI Branding settings. Check the GLPI logs for more information.', 'mod')),
                     true,
                     ERROR,
                 );
@@ -86,5 +86,12 @@ final class UIBrandingController extends AbstractController
         return $this->render('@mod/uibranding.html.twig', $viewData);
     }
 
-
+    /**
+     * GLPI stores flash messages and renders them as HTML without escaping.
+     * Escape translated messages before sending them to that sink.
+     */
+    private static function escapeFlashMessage(string $message): string
+    {
+        return htmlspecialchars($message, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    }
 }
