@@ -36,12 +36,13 @@ final class BrandingCssController extends AbstractController
 
         if ($config['show_logos'] === '1') {
             if ($config['theme_logos'] === '1') {
-                $logoLight = $assetUrl('logo_m_white');
-                $logoLightReduced = $assetUrl('logo_s_white');
-                $logoDark = $assetUrl('logo_m_black');
-                $logoDarkReduced = $assetUrl('logo_s_black');
-                $logoDarkLogin = $assetUrl('logo_l_black');
-                $logoLightLogin = $assetUrl('logo_l_white');
+                // Light surfaces need dark artwork; dark surfaces need white artwork.
+                $logoLight = $assetUrl('logo_m_black');
+                $logoLightReduced = $assetUrl('logo_s_black');
+                $logoDark = $assetUrl('logo_m_white');
+                $logoDarkReduced = $assetUrl('logo_s_white');
+                $logoDarkLogin = $assetUrl('logo_l_white');
+                $logoLightLogin = $assetUrl('logo_l_black');
             } else {
                 $logoLight = $assetUrl('logo_m');
                 $logoLightReduced = $assetUrl('logo_s');

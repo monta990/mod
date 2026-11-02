@@ -89,6 +89,34 @@ $required = [
     'resources/images/sample-logo-login-light.png',
 ];
 
+$logoDimensions = [
+    'sample-logo-mark.png' => [53, 53],
+    'sample-logo-mark-dark.png' => [53, 53],
+    'sample-logo-mark-light.png' => [53, 53],
+    'sample-logo-horizontal.png' => [100, 55],
+    'sample-logo-horizontal-dark.png' => [100, 55],
+    'sample-logo-horizontal-light.png' => [100, 55],
+    'sample-logo-login.png' => [250, 138],
+    'sample-logo-login-dark.png' => [250, 138],
+    'sample-logo-login-light.png' => [250, 138],
+];
+
+foreach ($logoDimensions as $filename => [$expectedWidth, $expectedHeight]) {
+    $imagePath = $root . '/resources/images/' . $filename;
+    $imageInfo = is_file($imagePath) ? @getimagesize($imagePath) : false;
+    $expect(
+        is_array($imageInfo)
+        && (int) $imageInfo[0] === $expectedWidth
+        && (int) $imageInfo[1] === $expectedHeight,
+        sprintf(
+            '%s must be a PNG image of exactly %dx%d pixels.',
+            $filename,
+            $expectedWidth,
+            $expectedHeight,
+        ),
+    );
+}
+
 foreach ($required as $relative) {
     $expect(is_file($root . DIRECTORY_SEPARATOR . $relative), sprintf('Missing required release file: %s', $relative));
 }

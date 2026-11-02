@@ -62,11 +62,15 @@ def make_mark(master: Image.Image, size: int, bright_blue: bool = False) -> Imag
 
 
 def make_lockup(master: Image.Image, width: int, height: int, light_surface: bool) -> Image.Image:
+    """Render the horizontal wordmark into GLPI's exact native canvas size."""
     result = Image.new('RGBA', (width, height), (0, 0, 0, 0))
-    icon_size = min(int(height * 0.78), int(width * 0.38))
-    left = int(height * 0.05)
-    gap = int(height * 0.06)
-    right = int(height * 0.04)
+
+    # The navigation logo is only 100x55 px, so reserve enough width for the
+    # complete "UI Branding" wordmark instead of scaling the symbol too large.
+    icon_size = min(max(1, int(height * 0.50)), max(1, int(width * 0.28)))
+    left = max(1, round(height * 0.055))
+    gap = max(2, round(height * 0.075))
+    right = max(1, round(height * 0.055))
 
     icon = make_mark(master, icon_size, bright_blue=not light_surface)
     result.alpha_composite(icon, (left, (height - icon_size) // 2))
@@ -75,14 +79,19 @@ def make_lockup(master: Image.Image, width: int, height: int, light_surface: boo
     text = 'UI Branding'
     draw = ImageDraw.Draw(result)
     available_width = width - left - icon_size - gap - right
-    font_size = int(height * 0.24)
-    font = load_font(font_size)
-    while font_size > 10:
+    font_size = max(7, int(height * 0.18))
+
+    while font_size >= 6:
+        font = load_font(font_size)
         bounds = draw.textbbox((0, 0), text, font=font)
         if bounds[2] - bounds[0] <= available_width:
             break
         font_size -= 1
-        font = load_font(font_size)
+
+    if font_size < 6:
+        raise RuntimeError(
+            f'The UI Branding wordmark does not fit the requested {width}x{height} canvas.'
+        )
 
     bounds = draw.textbbox((0, 0), text, font=font)
     text_height = bounds[3] - bounds[1]
@@ -133,18 +142,41 @@ def generate(plugin_root: Path) -> None:
     quantize_png(make_mark(master, 512), plugin_root / 'logo.png')
 
     assets = {
-        'sample-logo-mark.png': make_mark(master, 256, False),
-        'sample-logo-mark-dark.png': make_mark(master, 256, False),
-        'sample-logo-mark-light.png': make_mark(master, 256, True),
-        'sample-logo-horizontal.png': make_lockup(master, 640, 352, True),
-        'sample-logo-horizontal-dark.png': make_lockup(master, 640, 352, True),
-        'sample-logo-horizontal-light.png': make_lockup(master, 640, 352, False),
-        'sample-logo-login.png': make_lockup(master, 1000, 552, True),
-        'sample-logo-login-dark.png': make_lockup(master, 1000, 552, True),
-        'sample-logo-login-light.png': make_lockup(master, 1000, 552, False),
+        'sample-logo-mark.png': make_mark(master, 53, False),
+        'sample-logo-mark-dark.png': make_mark(master, 53, False),
+        'sample-logo-mark-light.png': make_mark(master, 53, True),
+        'sample-logo-horizontal.png': make_lockup(master, 100, 55, True),
+        'sample-logo-horizontal-dark.png': make_lockup(master, 100, 55, True),
+        'sample-logo-horizontal-light.png': make_lockup(master, 100, 55, False),
+        'sample-logo-login.png': make_lockup(master, 250, 138, True),
+        'sample-logo-login-dark.png': make_lockup(master, 250, 138, True),
+        'sample-logo-login-light.png': make_lockup(master, 250, 138, False),
     }
+    expected_dimensions = {
+        'sample-logo-mark.png': (53, 53),
+        'sample-logo-mark-dark.png': (53, 53),
+        'sample-logo-mark-light.png': (53, 53),
+        'sample-logo-horizontal.png': (100, 55),
+        'sample-logo-horizontal-dark.png': (100, 55),
+        'sample-logo-horizontal-light.png': (100, 55),
+        'sample-logo-login.png': (250, 138),
+        'sample-logo-login-dark.png': (250, 138),
+        'sample-logo-login-light.png': (250, 138),
+    }
+
     for name, image in assets.items():
-        quantize_png(image, images_dir / name)
+        if image.size != expected_dimensions[name]:
+            raise RuntimeError(
+                f'{name} has unexpected dimensions {image.size}; '
+                f'expected {expected_dimensions[name]}.'
+            )
+        destination = images_dir / name
+        quantize_png(image, destination)
+        with Image.open(destination) as generated:
+            if generated.size != expected_dimensions[name]:
+                raise RuntimeError(
+                    f'Generated file {name} has unexpected dimensions {generated.size}.'
+                )
 
     icon = make_mark(master, 256, False)
     icon.save(
