@@ -5,7 +5,7 @@
 - Candidate version: `12.0.3`.
 - Base version: `12.0.2`.
 - Target platform: GLPI 12.0.x and PHP 8.3 or newer.
-- Branch: `fix/12.0.3-restore-previews-github-check`.
+- Branch: `fix/12.0.3-github-http-client`.
 - Status: draft pull request; do not merge or publish until review and CI are complete.
 
 ## Changes in this candidate
