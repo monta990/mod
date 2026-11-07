@@ -35,7 +35,7 @@ $releasePolicyPath = $repositoryRoot . '/RELEASE.md';
 $releasePolicy = is_file($releasePolicyPath) ? (file_get_contents($releasePolicyPath) ?: '') : '';
 
 $expect(
-    preg_match('/^\\s*- "12\\.0\\.1"\\s*$/m', $workflow) === 1
+    preg_match('/^\\s*- "12\\.0\\.2"\\s*$/m', $workflow) === 1
     && str_contains($workflow, "if: github.ref == 'refs/tags/12.0.2'")
     && !str_contains($workflow, "startsWith(github.ref")
     && !str_contains($workflow, "v12.0.2"),
@@ -48,7 +48,7 @@ $expect(
 );
 
 $expect(
-    preg_match("/const PLUGIN_MOD_VERSION = '12\\.0\\.1';/", $setup) === 1,
+    preg_match("/const PLUGIN_MOD_VERSION = '12\\.0\\.2';/", $setup) === 1,
     'setup.php must declare plugin version 12.0.2.'
 );
 $expect(
@@ -58,8 +58,8 @@ $expect(
 );
 $expect(
     preg_match('/<id>mod<\\/id>/', $xml) === 1
-    && preg_match('/<version>12\\.0\\.1<\\/version>/', $xml) === 1
-    && preg_match('/<num>12\\.0\\.1<\\/num>/', $xml) === 1,
+    && preg_match('/<version>12\\.0\\.2<\\/version>/', $xml) === 1
+    && preg_match('/<num>12\\.0\\.2<\\/num>/', $xml) === 1,
     'mod.xml must identify plugin mod and version 12.0.2.'
 );
 $expect(

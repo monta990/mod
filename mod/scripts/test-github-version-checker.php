@@ -23,6 +23,8 @@ namespace GlpiPlugin\Mod {
 }
 
 namespace {
+    use GlpiPlugin\Mod\Service\GitHubVersionChecker;
+
     require_once dirname(__DIR__) . '/src/Service/GitHubVersionChecker.php';
 
     $cachePath = $testFilesDir . DIRECTORY_SEPARATOR . 'github-version-cache.json';
@@ -43,7 +45,7 @@ namespace {
         static function () use (&$fetchCount): string {
             $fetchCount++;
             return '12.0.2';
-        }
+        },
     );
 
     try {
