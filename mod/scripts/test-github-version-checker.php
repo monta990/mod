@@ -41,7 +41,7 @@ namespace {
     }
 
     $fetchCount = 0;
-    $checker = new \GlpiPlugin\Mod\Service\GitHubVersionChecker(
+    $checker = new GitHubVersionChecker(
         static function () use (&$fetchCount): string {
             $fetchCount++;
             return '12.0.2';
