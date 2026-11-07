@@ -1,6 +1,6 @@
 # UI Branding — Testing Guide
 
-This document describes the checks for UI Branding 12.0.1 on GLPI 12.0.x. Run installation, upgrade and visual checks on a disposable or staging instance before deploying to production.
+This document describes the checks for UI Branding 12.0.4 on GLPI 12.0.x. Run installation, upgrade and visual checks on a disposable or staging instance before deploying to production.
 
 ## 1. Test environment
 
@@ -52,9 +52,10 @@ Before testing an update, back up the database and `GLPI_PLUGIN_DOC_DIR/mod/`. R
 
 ### Background and favicon
 
-- [ ] Upload a valid JPG/JPEG background of at least 1920×1080, verify the selected filename status, save, and confirm the background on the login page.
-- [ ] Upload a valid ICO and verify the browser tab/favicon in authenticated and anonymous pages.
-- [ ] Confirm selecting, replacing and clearing a file only updates the text status; empty status containers remain hidden, and no upload-derived value is assigned to a DOM URL attribute.
+- [ ] Confirm the saved background preview appears when the page opens; select a valid JPG/JPEG background and verify its canvas preview before saving.
+- [ ] Confirm the saved favicon preview appears; select a valid ICO and verify its canvas preview or safe filename fallback, then verify the browser tab/favicon after saving.
+- [ ] Replace each saved background, favicon, standard logo and theme logo; confirm the preview URL's `v` fingerprint changes and the new image is loaded despite the one-year immutable cache.
+- [ ] Confirm selecting a supported image displays a canvas preview, clearing the selection restores the saved image, and unsupported formats use literal filename text. Confirm no upload-derived value is assigned to a DOM URL attribute.
 
 ## 4. Upload validation and failure handling
 
@@ -95,7 +96,7 @@ The automated regression test covers the preservation and repeated-update cases 
 - [ ] Confirm asset responses have appropriate MIME types, ETag and Last-Modified headers.
 - [ ] Repeat a request with matching conditional headers and verify a not-modified response where applicable.
 - [ ] Change an uploaded asset and confirm the fingerprinted URL changes.
-- [ ] Confirm the GitHub version check reports the latest stable release and ignores drafts/pre-releases.
+- [ ] Confirm the GitHub version check reports the latest stable release and ignores drafts/pre-releases. After upgrading the plugin, confirm the old version-check cache is bypassed and GitHub is queried again.
 - [ ] Simulate GitHub/network unavailability and confirm the configuration page still loads and saved settings are unchanged.
 - [ ] Confirm the successful version-check cache and failed-check retry behavior (six hours and five minutes respectively).
 
@@ -120,6 +121,7 @@ php -l mod/scripts/validate-release.php
 php -l mod/scripts/test-upgrade-preservation.php
 
 php mod/scripts/test-upgrade-preservation.php
+php mod/scripts/test-github-version-checker.php
 php mod/scripts/validate-release.php
 
 for po in mod/locales/*.po; do
@@ -127,7 +129,7 @@ for po in mod/locales/*.po; do
 done
 
 bash mod/scripts/package.sh dist
-unzip -l dist/mod-12.0.1.zip
+unzip -l dist/mod-12.0.4.zip
 ```
 
 The package check must confirm:
@@ -162,8 +164,8 @@ Do not merge or publish solely because the ZIP builds. Before accepting a releas
 - [ ] Test installation and update on a GLPI 12.0.x staging instance.
 - [ ] Complete the functional, visual, upload, permission and upgrade checks above.
 - [ ] Confirm all required CI and Security Analysis jobs pass on the candidate commit.
-- [ ] Inspect the final `mod-12.0.1.zip` and test that exact archive.
-- [ ] Confirm the plugin version remains `12.0.1` and compatibility remains GLPI 12.0.x.
+- [ ] Inspect the final `mod-12.0.4.zip` and test that exact archive.
+- [ ] Confirm the plugin version remains `12.0.4` and compatibility remains GLPI 12.0.x.
 - [ ] Review all open and newly added pull-request findings.
 
 This guide is a test checklist, not a claim that every manual test has been executed.
