@@ -14,10 +14,19 @@ final class GitHubVersionChecker
 {
     private const API_URL = 'https://api.github.com/repos/monta990/mod/releases/latest';
     private const RELEASES_URL = 'https://github.com/monta990/mod/releases';
-    private const CACHE_VERSION = 1;
+    private const CACHE_VERSION = 2;
     private const SUCCESS_CACHE_TTL = 21600; // 6 hours
     private const FAILURE_CACHE_TTL = 300;   // 5 minutes
     private const MAX_RESPONSE_BYTES = 65536;
+
+    private ?\Closure $releaseFetcher = null;
+
+    public function __construct(?callable $releaseFetcher = null)
+    {
+        if ($releaseFetcher !== null) {
+            $this->releaseFetcher = \Closure::fromCallable($releaseFetcher);
+        }
+    }
 
     /**
      * Return the installed version and latest stable public GitHub release.
@@ -44,15 +53,22 @@ final class GitHubVersionChecker
         $checkOk = (bool) ($cache['check_ok'] ?? false);
         $checkedAt = (int) ($cache['checked_at'] ?? 0);
         $cacheVersion = (int) ($cache['cache_version'] ?? 0);
+        $current = defined('PLUGIN_MOD_VERSION')
+            ? (string) constant('PLUGIN_MOD_VERSION')
+            : '0.0.0';
+        $cachedPluginVersion = (string) ($cache['plugin_version'] ?? '');
 
         $ttl = $checkOk ? self::SUCCESS_CACHE_TTL : self::FAILURE_CACHE_TTL;
         $cacheFresh = $cacheVersion === self::CACHE_VERSION
             && $checkedAt > 0
             && ($now - $checkedAt) >= 0
-            && ($now - $checkedAt) < $ttl;
+            && ($now - $checkedAt) < $ttl
+            && $cachedPluginVersion === $current;
 
         if (!$cacheFresh) {
-            $fetchedVersion = $this->fetchLatestGithubRelease();
+            $fetchedVersion = $this->releaseFetcher !== null
+                ? $this->normalizeVersion((string) ($this->releaseFetcher)())
+                : $this->fetchLatestGithubRelease();
             $checkOk = $fetchedVersion !== '';
             if ($checkOk) {
                 $latest = $fetchedVersion;
@@ -60,16 +76,14 @@ final class GitHubVersionChecker
             $checkedAt = $now;
 
             $this->writeCache([
-                'cache_version' => self::CACHE_VERSION,
-                'checked_at'    => $checkedAt,
+                'cache_version'  => self::CACHE_VERSION,
+                'plugin_version' => $current,
+                'checked_at'     => $checkedAt,
                 'latest'        => $latest,
                 'check_ok'      => $checkOk,
             ]);
         }
 
-        $current = defined('PLUGIN_MOD_VERSION')
-            ? (string) constant('PLUGIN_MOD_VERSION')
-            : '0.0.0';
         $checkAvailable = $checkOk && $latest !== '';
         $updateAvailable = $checkAvailable && version_compare($latest, $current, '>');
         $installedIsNewer = $checkAvailable && version_compare($current, $latest, '>');
