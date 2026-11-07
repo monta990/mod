@@ -21,8 +21,7 @@ namespace Glpi\Toolbox {
         public function __construct(
             private int $statusCode,
             private string $body,
-        ) {
-        }
+        ) {}
 
         public function getStatusCode(): int
         {
@@ -64,6 +63,7 @@ namespace GlpiPlugin\Mod {
 }
 
 namespace {
+    use Glpi\Toolbox\FakeHttpResponse;
     use Glpi\Toolbox\HttpClient;
     use GlpiPlugin\Mod\Service\GitHubVersionChecker;
 
@@ -130,7 +130,7 @@ namespace {
         throw new RuntimeException('Unable to reset the previous version-check cache.');
     }
 
-    HttpClient::$nextResponse = new \Glpi\Toolbox\FakeHttpResponse(
+    HttpClient::$nextResponse = new FakeHttpResponse(
         200,
         json_encode([
             'tag_name' => '12.0.1',
