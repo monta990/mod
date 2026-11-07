@@ -305,7 +305,7 @@ test('saved image previews remain in the configuration template', () => {
     assert.match(template, /<img id="preview_background"[\s\S]*?src="\{\{ preview_url \}\}\/background\?v=\{\{ preview_versions\.background \}\}"/);
     assert.match(template, /<img id="preview_favicon"[\s\S]*?src="\{\{ preview_url \}\}\/favicon\?v=\{\{ preview_versions\.favicon \}\}"/);
     assert.equal((template.match(/<img id="preview_\{\{ logo\.name \}\}"/g) || []).length, 2);
-    assert.equal((template.match(/src="\{\{ preview_url \}\}\/\{\{ logo\.name \}\}\?v=\{\{ preview_versions\[logo\.name\] \}\}"/g) || []).length, 2);
+    assert.equal((template.match(/(?<!-)src="\{\{ preview_url \}\}\/\{\{ logo\.name \}\}\?v=\{\{ preview_versions\[logo\.name\] \}\}"/g) || []).length, 2);
     assert.equal((template.match(/data-mod-default-src="\{\{ preview_url \}\}\/\{\{ logo\.name \}\}\?v=\{\{ preview_versions\[logo\.name\] \}\}"/g) || []).length, 2);
     assert.ok(template.includes('data-mod-default-preview="preview_{{ logo.name }}"'));
 });
