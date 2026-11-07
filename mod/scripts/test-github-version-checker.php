@@ -119,6 +119,10 @@ namespace {
     }
 
     // Exercise the production transport without requiring a live network.
+
+    if (!mkdir($testFilesDir, 0750, true) && !is_dir($testFilesDir)) {
+        throw new RuntimeException('Unable to recreate the temporary version-check directory.');
+    }
     // GLPI's HttpClient is the production path and honors GLPI proxy settings.
     $oldCache['plugin_version'] = '12.0.1';
     $oldCache['latest'] = '12.0.1';
@@ -152,4 +156,8 @@ namespace {
     }
 
     fwrite(STDOUT, "GitHub version checker cache and GLPI HTTP client tests passed.\n");
+
+    @unlink($cachePath);
+    @rmdir($testFilesDir);
+    @rmdir($testStorage);
 }
