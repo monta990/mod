@@ -20,7 +20,7 @@ The plugin uses GLPI's native plugin autoloader and Symfony-based Controllers. I
 - Use separate black and white logo assets according to the active GLPI light/dark theme.
 - Replace the public login-page background.
 - Replace the browser favicon.
-- Show an accessible, safe upload-selection state before saving; file data is never copied into DOM URL attributes.
+- Show the saved image and preview newly selected images on canvas; upload data is never assigned to DOM URL attributes.
 - Validate uploaded files before replacing existing resources.
 - Preserve administrator settings and uploaded branding assets across plugin updates.
 - Serve public branding assets through allowlisted GLPI Controllers with content fingerprints and conditional HTTP caching.
@@ -64,7 +64,7 @@ The configuration page is available to users with GLPI's configuration update pe
 
 When theme-based logos are enabled, upload the white variants for dark surfaces and the black variants for light surfaces. The plugin selects the matching resource from GLPI's active theme.
 
-The upload status areas show the selected filename when a file is chosen. No image thumbnail is rendered before saving; upload data is never copied into DOM URL attributes. The new file and settings are applied only after saving.
+The configuration page displays the currently served image for every resource. Selecting a replacement renders a client-side canvas preview without assigning upload data to DOM URL attributes; unsupported formats fall back to the selected filename as literal text. Clearing the selection restores the saved image. The new file and settings are applied only after saving.
 
 ### Image requirements
 
@@ -122,4 +122,4 @@ The editable SVG master, asset-generation scripts, CI/security tooling and other
 - [Changelog](https://github.com/monta990/mod/blob/main/CHANGELOG.md)
 - [License](LICENSE.txt)
 
-UI Branding 12.0.1 — GLPI 12.0.x.
+UI Branding 12.0.2 — GLPI 12.0.x.

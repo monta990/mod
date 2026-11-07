@@ -77,12 +77,13 @@ jobs:
       - name: Verify repository layout
         run: |
           test -d mod
-          unexpected="$(find . -maxdepth 1 -mindepth 1 ! -name '.github' ! -name '.git' ! -name 'mod' ! -name 'README.md' ! -name 'LICENSE' ! -name 'CHANGELOG.md' ! -name 'RELEASE.md' -print)"
+          unexpected="$(find . -maxdepth 1 -mindepth 1 ! -name '.github' ! -name '.git' ! -name 'mod' ! -name 'README.md' ! -name 'LICENSE' ! -name 'CHANGELOG.md' ! -name 'RELEASE.md' ! -name 'HANDOFF.md' -print)"
           test -z "$unexpected"
           test -f README.md
           test -f LICENSE
           test -f CHANGELOG.md
           test -f RELEASE.md
+          test -f HANDOFF.md
           cmp LICENSE mod/LICENSE.txt
 
       - name: PHP syntax

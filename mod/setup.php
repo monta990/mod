@@ -10,7 +10,7 @@
 use Glpi\Plugin\Hooks;
 use GlpiPlugin\Mod\BrandingHooks;
 
-const PLUGIN_MOD_VERSION = '12.0.1';
+const PLUGIN_MOD_VERSION = '12.0.2';
 const PLUGIN_MOD_MIN_GLPI_VERSION = '12.0.0';
 const PLUGIN_MOD_MAX_GLPI_VERSION = '12.1.0';
 

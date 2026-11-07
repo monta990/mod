@@ -2,6 +2,17 @@
 
 All notable changes to UI Branding are documented here.
 
+## [12.0.2] - 2026-11-07
+
+### Fixed
+- Restore server-rendered previews for the saved background, favicon and all standard/theme logos.
+- Render newly selected images on pre-existing canvas elements without assigning upload-derived values to DOM URL attributes.
+- Restore saved previews when file selections are cleared and show unsupported filenames as safe literal text.
+- Refresh the GitHub latest-release cache whenever the installed plugin version changes.
+
+### Tests
+- Add regression coverage for saved previews, canvas rendering, clearing selections, safe filename handling and GitHub cache invalidation.
+
 ## [12.0.1] - 2026-11-02
 
 ### Security

@@ -6,7 +6,7 @@ UI Branding customizes the GLPI 12 interface without changing GLPI core files.
 
 - Custom application title and optional login background.
 - Standard and theme-aware logos for navigation and the login page.
-- Custom favicon and safe upload-selection status.
+- Custom favicon and secure live previews of saved and newly selected images.
 - Administrator-only configuration with validated uploads.
 - A GitHub latest-stable-release check on the configuration page, cached for six hours.
 - Upgrade-safe preservation of administrator settings and previously uploaded images.
