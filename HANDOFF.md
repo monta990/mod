@@ -5,7 +5,7 @@
 - Candidate version: `12.0.4`.
 - Base version: `12.0.3`.
 - Target platform: GLPI 12.0.x and PHP 8.3 or newer.
-- Branch: `fix/12.0.4-github-http-client`.
+- Branch: `fix/12.0.3-github-http-client`.
 - Status: draft pull request; do not merge or publish until review and CI are complete.
 
 ## Changes in this candidate
@@ -31,7 +31,7 @@
 
 - Source comparison confirmed that 12.0.1 replaced saved image elements with empty status containers; this candidate restores them.
 - The GitHub version checker and controller were unchanged since 12.0.0; cache invalidation now covers a plugin upgrade.
-- The public GitHub API currently reports 12.0.1 as the latest stable release; installed 12.0.2/12.0.4 builds should report that the installed version is newer until the newer version is published.
+- The public GitHub API currently reports 12.0.1 as the latest stable release; installed 12.0.3/12.0.4 builds should report that the installed version is newer until the newer version is published.
 - Automated validation must complete on this candidate: PHP 8.3/8.4/8.5, experimental PHP 8.6, Node tests, cache tests, upgrade preservation, gettext, package build and security workflows.
 
 ## Manual validation required
