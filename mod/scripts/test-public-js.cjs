@@ -206,6 +206,39 @@ test('unsupported images use literal filename text and keep the saved preview vi
     assert.equal(fixture.status.children.length, 0);
 });
 
+test('saved preview is restored when a later selected image cannot be decoded', async () => {
+    const fixture = createPreviewFixture();
+
+    runScript(readPluginScript('uibranding.js'), {
+        document: fixture.document,
+        createImageBitmap(file) {
+            if (file.name === 'broken.ico') {
+                return Promise.reject(new Error('Unsupported icon payload'));
+            }
+            return Promise.resolve({
+                width: 320,
+                height: 180,
+                close() {},
+            });
+        },
+    });
+    fixture.documentListeners.DOMContentLoaded();
+
+    fixture.input.files = [{ name: 'first.png' }];
+    fixture.input.dispatch('change');
+    await flushPromises();
+    assert.equal(fixture.savedPreview.hidden, true);
+
+    fixture.input.files = [{ name: 'broken.ico' }];
+    fixture.input.dispatch('change');
+    await flushPromises();
+
+    assert.equal(fixture.savedPreview.hidden, false);
+    assert.equal(fixture.canvas.hidden, true);
+    assert.equal(fixture.status.hidden, false);
+    assert.equal(fixture.status.textContent, 'broken.ico');
+});
+
 test('clearing a selected upload restores the saved preview and clears the canvas', async () => {
     const fixture = createPreviewFixture();
 

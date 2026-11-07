@@ -72,6 +72,7 @@
         }
 
         var requestVersion = nextRequestVersion(input);
+        savedPreview.hidden = false;
         status.textContent = file.name;
         status.hidden = false;
         canvas.hidden = true;
