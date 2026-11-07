@@ -280,7 +280,7 @@ test('preview containers remain hidden when no file is selected', () => {
 
     assert.match(
         template,
-        /\.mod-preview-background\[hidden\],\s*\.mod-preview-logo\[hidden\],\s*\.mod-preview-favicon\[hidden\]\s*\{\s*display:\s*none\s*!important;/s
+        /\.mod-preview-image\[hidden\],\s*\.mod-preview-canvas\[hidden\],\s*\.mod-preview-status\[hidden\]\s*\{\s*display:\s*none\s*!important;/s
     );
 });
 
