@@ -12,7 +12,7 @@ namespace {
 
     define('GLPI_ROOT', __DIR__);
     define('GLPI_PLUGIN_DOC_DIR', $testStorage);
-    define('PLUGIN_MOD_VERSION', '12.0.2');
+    define('PLUGIN_MOD_VERSION', '12.0.3');
 }
 
 namespace Glpi\Toolbox {
@@ -75,7 +75,7 @@ namespace {
         'checked_at'     => time(),
         'latest'         => '12.0.1',
         'check_ok'       => true,
-        'plugin_version' => '12.0.1',
+        'plugin_version' => '12.0.2',
     ];
 
     if (file_put_contents($cachePath, json_encode($oldCache, JSON_THROW_ON_ERROR)) === false) {
@@ -86,7 +86,7 @@ namespace {
     $checker = new GitHubVersionChecker(
         static function () use (&$fetchCount): string {
             $fetchCount++;
-            return '12.0.2';
+            return '12.0.3';
         },
     );
 
@@ -96,7 +96,7 @@ namespace {
         if ($fetchCount !== 1) {
             throw new RuntimeException('An upgrade must bypass the previous plugin-version cache.');
         }
-        if ($result['latest'] !== '12.0.2' || !$result['check_available']) {
+        if ($result['latest'] !== '12.0.3' || !$result['check_available']) {
             throw new RuntimeException('The latest GitHub version was not refreshed after the upgrade.');
         }
         if ($result['update_available'] || $result['installed_is_newer']) {
@@ -104,7 +104,7 @@ namespace {
         }
 
         $writtenCache = json_decode((string) file_get_contents($cachePath), true, 16, JSON_THROW_ON_ERROR);
-        if (($writtenCache['plugin_version'] ?? null) !== '12.0.2') {
+        if (($writtenCache['plugin_version'] ?? null) !== '12.0.3') {
             throw new RuntimeException('The cache must record the installed plugin version.');
         }
 
@@ -124,7 +124,7 @@ namespace {
         throw new RuntimeException('Unable to recreate the temporary version-check directory.');
     }
     // GLPI's HttpClient is the production path and honors GLPI proxy settings.
-    $oldCache['plugin_version'] = '12.0.1';
+    $oldCache['plugin_version'] = '12.0.2';
     $oldCache['latest'] = '12.0.1';
     if (file_put_contents($cachePath, json_encode($oldCache, JSON_THROW_ON_ERROR)) === false) {
         throw new RuntimeException('Unable to reset the previous version-check cache.');

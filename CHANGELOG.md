@@ -2,6 +2,16 @@
 
 All notable changes to UI Branding are documented here.
 
+## [12.0.3] - 2026-11-07
+
+### Fixed
+- Use GLPI's native HTTP client for GitHub version checks so the request honors the proxy configured in GLPI and its trusted TLS settings.
+- Increase the GitHub request timeout to ten seconds and retain explicit logging of transport failures.
+- Remove the direct dependency on the PHP cURL extension for version checking.
+
+### Tests
+- Add transport regression coverage for the GLPI HTTP client, GitHub API headers, timeout and response parsing.
+
 ## [12.0.2] - 2026-11-07
 
 ### Fixed
