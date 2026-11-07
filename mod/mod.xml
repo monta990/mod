@@ -3,7 +3,7 @@
     <id>mod</id>
     <name>UI Branding</name>
     <key>mod</key>
-    <version>12.0.3</version>
+    <version>12.0.4</version>
     <author>Edwin Elias Alvarez</author>
     <homepage>https://github.com/monta990/mod/</homepage>
     <license>GPL-3.0-or-later</license>
@@ -13,7 +13,7 @@
     </requirements>
     <versions>
         <version>
-            <num>12.0.3</num>
+            <num>12.0.4</num>
             <compatibility>~12.0.0</compatibility>
             <download_url>https://github.com/monta990/mod/releases</download_url>
         </version>
