@@ -100,8 +100,8 @@
                             </div>
                             <div class="col-12 col-xl-6 text-center">
                                 <img id="preview_background" class="img-fluid mod-preview-image mod-preview-background"
-                                     src="{{ preview_url }}/background"
-                                     data-mod-default-src="{{ preview_url }}/background"
+                                     src="{{ preview_url }}/background?v={{ preview_versions.background }}"
+                                     data-mod-default-src="{{ preview_url }}/background?v={{ preview_versions.background }}"
                                      alt="{{ __('Background', 'mod') }}" />
                                 <canvas id="preview_background_upload" class="mod-preview-canvas mod-preview-background" data-mod-max-width="960" data-mod-max-height="540" role="img" hidden></canvas>
                                 <div id="status_background_upload" class="mod-preview-status" role="status" aria-live="polite" hidden></div>
@@ -122,8 +122,8 @@
                             </div>
                             <div class="col-12 col-xl-6 text-center">
                                 <img id="preview_favicon" class="mod-preview-image mod-preview-favicon"
-                                     src="{{ preview_url }}/favicon"
-                                     data-mod-default-src="{{ preview_url }}/favicon"
+                                     src="{{ preview_url }}/favicon?v={{ preview_versions.favicon }}"
+                                     data-mod-default-src="{{ preview_url }}/favicon?v={{ preview_versions.favicon }}"
                                      alt="{{ __('Favicon', 'mod') }}" />
                                 <canvas id="preview_favicon_upload" class="mod-preview-canvas mod-preview-favicon" data-mod-max-width="128" data-mod-max-height="128" role="img" hidden></canvas>
                                 <div id="status_favicon_upload" class="mod-preview-status" role="status" aria-live="polite" hidden></div>
@@ -159,8 +159,8 @@
                                         </div>
                                         <div class="col-12 col-xl-5 text-center">
                                             <img id="preview_{{ logo.name }}" class="img-fluid mod-preview-image mod-preview-logo"
-                                                 src="{{ preview_url }}/{{ logo.name }}"
-                                                 data-mod-default-src="{{ preview_url }}/{{ logo.name }}"
+                                                 src="{{ preview_url }}/{{ logo.name }}?v={{ preview_versions[logo.name] }}"
+                                                 data-mod-default-src="{{ preview_url }}/{{ logo.name }}?v={{ preview_versions[logo.name] }}"
                                                  alt="{{ logo.label }}" />
                                             <canvas id="preview_{{ logo.name }}_upload" class="mod-preview-canvas mod-preview-logo" data-mod-max-width="640" data-mod-max-height="360" role="img" hidden></canvas>
                                             <div id="status_{{ logo.name }}_upload" class="mod-preview-status" role="status" aria-live="polite" hidden></div>
@@ -200,8 +200,8 @@
                                         </div>
                                         <div class="col-12 col-xl-5 text-center">
                                             <img id="preview_{{ logo.name }}" class="img-fluid mod-preview-image mod-preview-logo"
-                                                 src="{{ preview_url }}/{{ logo.name }}"
-                                                 data-mod-default-src="{{ preview_url }}/{{ logo.name }}"
+                                                 src="{{ preview_url }}/{{ logo.name }}?v={{ preview_versions[logo.name] }}"
+                                                 data-mod-default-src="{{ preview_url }}/{{ logo.name }}?v={{ preview_versions[logo.name] }}"
                                                  alt="{{ logo.label }}" />
                                             <canvas id="preview_{{ logo.name }}_upload" class="mod-preview-canvas mod-preview-logo" data-mod-max-width="640" data-mod-max-height="360" role="img" hidden></canvas>
                                             <div id="status_{{ logo.name }}_upload" class="mod-preview-status" role="status" aria-live="polite" hidden></div>
