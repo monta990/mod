@@ -1,11 +1,11 @@
-# HANDOFF — UI Branding 12.0.2
+# HANDOFF — UI Branding 12.0.3
 
 ## Current state
 
-- Candidate version: `12.0.2`.
-- Base version: `12.0.1`.
+- Candidate version: `12.0.3`.
+- Base version: `12.0.2`.
 - Target platform: GLPI 12.0.x and PHP 8.3 or newer.
-- Branch: `fix/12.0.2-restore-previews-github-check`.
+- Branch: `fix/12.0.3-restore-previews-github-check`.
 - Status: draft pull request; do not merge or publish until review and CI are complete.
 
 ## Changes in this candidate
@@ -19,6 +19,7 @@
 
 ## Architecture and compatibility
 
+- GitHub release lookup uses GLPI's native `Glpi\\Toolbox\\HttpClient`, honoring GLPI proxy/TLS settings with a 10-second request timeout.
 - Settings remain in `GLPI_PLUGIN_DOC_DIR/mod/settings.ini`; administrator uploads remain under `uploads/`.
 - Public branding assets continue to be served by the existing allowlisted GLPI Controllers.
 - GitHub release lookup continues to use the public `releases/latest` endpoint.
@@ -29,7 +30,7 @@
 
 - Source comparison confirmed that 12.0.1 replaced saved image elements with empty status containers; this candidate restores them.
 - The GitHub version checker and controller were unchanged since 12.0.0; cache invalidation now covers a plugin upgrade.
-- The public GitHub API currently reports 12.0.1 as the latest stable release; an installed 12.0.1 package should report itself as current.
+- The public GitHub API currently reports 12.0.1 as the latest stable release; installed 12.0.2/12.0.3 builds should report that the installed version is newer until the newer version is published.
 - Automated validation must complete on this candidate: PHP 8.3/8.4/8.5, experimental PHP 8.6, Node tests, cache tests, upgrade preservation, gettext, package build and security workflows.
 
 ## Manual validation required
@@ -39,7 +40,7 @@
 - Select/clear valid JPEG and PNG files; verify canvas preview and restoration.
 - Test ICO decoding in the target browser; if unsupported, confirm the safe filename fallback.
 - Confirm version check reports the latest stable release after an upgrade and does not reuse a cache from the previous plugin version.
-- Do not publish until the exact CI-built `mod-12.0.2.zip` is installed and tested on staging.
+- Do not publish until the exact CI-built `mod-12.0.3.zip` is installed and tested on staging.
 
 ## Next steps
 
@@ -47,4 +48,4 @@
 2. Confirm all required CI and Security Analysis jobs pass on its exact head commit.
 3. Install and test the exact build artifact on GLPI 12.0.x staging.
 4. Merge only after review and functional verification.
-5. Create numeric tag `12.0.2` and publish the matching release asset.
+5. Create numeric tag `12.0.3` and publish the matching release asset.

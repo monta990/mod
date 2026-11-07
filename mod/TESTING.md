@@ -1,6 +1,6 @@
 # UI Branding — Testing Guide
 
-This document describes the checks for UI Branding 12.0.2 on GLPI 12.0.x. Run installation, upgrade and visual checks on a disposable or staging instance before deploying to production.
+This document describes the checks for UI Branding 12.0.3 on GLPI 12.0.x. Run installation, upgrade and visual checks on a disposable or staging instance before deploying to production.
 
 ## 1. Test environment
 
@@ -128,7 +128,7 @@ for po in mod/locales/*.po; do
 done
 
 bash mod/scripts/package.sh dist
-unzip -l dist/mod-12.0.2.zip
+unzip -l dist/mod-12.0.3.zip
 ```
 
 The package check must confirm:
@@ -163,8 +163,8 @@ Do not merge or publish solely because the ZIP builds. Before accepting a releas
 - [ ] Test installation and update on a GLPI 12.0.x staging instance.
 - [ ] Complete the functional, visual, upload, permission and upgrade checks above.
 - [ ] Confirm all required CI and Security Analysis jobs pass on the candidate commit.
-- [ ] Inspect the final `mod-12.0.2.zip` and test that exact archive.
-- [ ] Confirm the plugin version remains `12.0.2` and compatibility remains GLPI 12.0.x.
+- [ ] Inspect the final `mod-12.0.3.zip` and test that exact archive.
+- [ ] Confirm the plugin version remains `12.0.3` and compatibility remains GLPI 12.0.x.
 - [ ] Review all open and newly added pull-request findings.
 
 This guide is a test checklist, not a claim that every manual test has been executed.
