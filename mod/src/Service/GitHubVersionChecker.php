@@ -127,7 +127,7 @@ final class GitHubVersionChecker
             return '';
         }
 
-        if (!is_string($body) || $body === '') {
+        if ($body === '') {
             $this->logFailure('GitHub API returned an empty response.');
             return '';
         }
