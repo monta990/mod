@@ -2,7 +2,15 @@
 
 All notable changes to UI Branding are documented here.
 
-## [12.0.3] - 2026-11-07
+## [12.0.4] - 2026-11-07
+
+### Fixed
+- Add SHA-256 resource fingerprints to saved-preview URLs for the background, favicon, standard logos and theme logos, preventing stale images under the one-year immutable asset cache.
+
+### Tests
+- Extend the configuration template regression test to require fingerprinted URLs for every saved preview.
+
+## [12.0.4] - 2026-11-07
 
 ### Fixed
 - Use GLPI's native HTTP client for GitHub version checks so the request honors the proxy configured in GLPI and its trusted TLS settings.

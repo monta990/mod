@@ -322,9 +322,9 @@ test('preview containers remain hidden when no file is selected', () => {
 test('release workflow gates publication on the exact numeric tag', () => {
     const workflow = fs.readFileSync(path.resolve(pluginRoot, '..', '.github', 'workflows', 'ci.yml'), 'utf8');
 
-    assert.match(workflow, /if: github\.ref == 'refs\/tags\/12\.0\.3'/);
+    assert.match(workflow, /if: github\.ref == 'refs\/tags\/12\.0\.4'/);
     assert.doesNotMatch(workflow, /startsWith\(github\.ref/);
-    assert.doesNotMatch(workflow, /v12\.0\.3/);
+    assert.doesNotMatch(workflow, /v12\.0\.4/);
 });
 
 test('favicon logic reuses the trusted server-rendered link and removes native duplicates', () => {
