@@ -122,4 +122,4 @@ The editable SVG master, asset-generation scripts, CI/security tooling and other
 - [Changelog](https://github.com/monta990/mod/blob/main/CHANGELOG.md)
 - [License](LICENSE.txt)
 
-UI Branding 12.0.3 — GLPI 12.0.x.
+UI Branding 12.0.4 — GLPI 12.0.x.

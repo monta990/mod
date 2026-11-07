@@ -6,16 +6,16 @@ This rule applies to UI Branding and is the shared convention for the maintained
 
 Use the plain semantic version as the Git tag and GitHub Release name:
 
-- Correct: `12.0.3`
-- Incorrect: `v12.0.3`
+- Correct: `12.0.4`
+- Incorrect: `v12.0.4`
 
 The plugin metadata, release tag, GitHub Release title/version, changelog heading, runtime ZIP name and workflow tag filter must all refer to the same numeric version. Do not add a leading `v` to a plugin release tag.
 
 Examples:
 
-- Git tag: `12.0.3`
-- GitHub Release: `12.0.3`
-- Runtime package: `mod-12.0.3.zip`
+- Git tag: `12.0.4`
+- GitHub Release: `12.0.4`
+- Runtime package: `mod-12.0.4.zip`
 
 This policy concerns plugin release versions. It does not prohibit the `v` text in third-party action version comments or in version identifiers belonging to external tools.
 

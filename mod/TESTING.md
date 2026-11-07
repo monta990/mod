@@ -1,6 +1,6 @@
 # UI Branding — Testing Guide
 
-This document describes the checks for UI Branding 12.0.3 on GLPI 12.0.x. Run installation, upgrade and visual checks on a disposable or staging instance before deploying to production.
+This document describes the checks for UI Branding 12.0.4 on GLPI 12.0.x. Run installation, upgrade and visual checks on a disposable or staging instance before deploying to production.
 
 ## 1. Test environment
 
@@ -54,6 +54,7 @@ Before testing an update, back up the database and `GLPI_PLUGIN_DOC_DIR/mod/`. R
 
 - [ ] Confirm the saved background preview appears when the page opens; select a valid JPG/JPEG background and verify its canvas preview before saving.
 - [ ] Confirm the saved favicon preview appears; select a valid ICO and verify its canvas preview or safe filename fallback, then verify the browser tab/favicon after saving.
+- [ ] Replace each saved background, favicon, standard logo and theme logo; confirm the preview URL's `v` fingerprint changes and the new image is loaded despite the one-year immutable cache.
 - [ ] Confirm selecting a supported image displays a canvas preview, clearing the selection restores the saved image, and unsupported formats use literal filename text. Confirm no upload-derived value is assigned to a DOM URL attribute.
 
 ## 4. Upload validation and failure handling
@@ -128,7 +129,7 @@ for po in mod/locales/*.po; do
 done
 
 bash mod/scripts/package.sh dist
-unzip -l dist/mod-12.0.3.zip
+unzip -l dist/mod-12.0.4.zip
 ```
 
 The package check must confirm:
@@ -163,8 +164,8 @@ Do not merge or publish solely because the ZIP builds. Before accepting a releas
 - [ ] Test installation and update on a GLPI 12.0.x staging instance.
 - [ ] Complete the functional, visual, upload, permission and upgrade checks above.
 - [ ] Confirm all required CI and Security Analysis jobs pass on the candidate commit.
-- [ ] Inspect the final `mod-12.0.3.zip` and test that exact archive.
-- [ ] Confirm the plugin version remains `12.0.3` and compatibility remains GLPI 12.0.x.
+- [ ] Inspect the final `mod-12.0.4.zip` and test that exact archive.
+- [ ] Confirm the plugin version remains `12.0.4` and compatibility remains GLPI 12.0.x.
 - [ ] Review all open and newly added pull-request findings.
 
 This guide is a test checklist, not a claim that every manual test has been executed.
