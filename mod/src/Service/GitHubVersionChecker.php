@@ -2,6 +2,7 @@
 
 namespace GlpiPlugin\Mod\Service;
 
+use Glpi\Toolbox\HttpClient;
 use GlpiPlugin\Mod\BrandManager;
 
 if (!defined('GLPI_ROOT')) {
@@ -14,10 +15,19 @@ final class GitHubVersionChecker
 {
     private const API_URL = 'https://api.github.com/repos/monta990/mod/releases/latest';
     private const RELEASES_URL = 'https://github.com/monta990/mod/releases';
-    private const CACHE_VERSION = 1;
+    private const CACHE_VERSION = 2;
     private const SUCCESS_CACHE_TTL = 21600; // 6 hours
     private const FAILURE_CACHE_TTL = 300;   // 5 minutes
     private const MAX_RESPONSE_BYTES = 65536;
+
+    private ?\Closure $releaseFetcher = null;
+
+    public function __construct(?callable $releaseFetcher = null)
+    {
+        if ($releaseFetcher !== null) {
+            $this->releaseFetcher = \Closure::fromCallable($releaseFetcher);
+        }
+    }
 
     /**
      * Return the installed version and latest stable public GitHub release.
@@ -44,15 +54,22 @@ final class GitHubVersionChecker
         $checkOk = (bool) ($cache['check_ok'] ?? false);
         $checkedAt = (int) ($cache['checked_at'] ?? 0);
         $cacheVersion = (int) ($cache['cache_version'] ?? 0);
+        $current = defined('PLUGIN_MOD_VERSION')
+            ? (string) constant('PLUGIN_MOD_VERSION')
+            : '0.0.0';
+        $cachedPluginVersion = (string) ($cache['plugin_version'] ?? '');
 
         $ttl = $checkOk ? self::SUCCESS_CACHE_TTL : self::FAILURE_CACHE_TTL;
         $cacheFresh = $cacheVersion === self::CACHE_VERSION
             && $checkedAt > 0
             && ($now - $checkedAt) >= 0
-            && ($now - $checkedAt) < $ttl;
+            && ($now - $checkedAt) < $ttl
+            && $cachedPluginVersion === $current;
 
         if (!$cacheFresh) {
-            $fetchedVersion = $this->fetchLatestGithubRelease();
+            $fetchedVersion = $this->releaseFetcher !== null
+                ? $this->normalizeVersion((string) ($this->releaseFetcher)())
+                : $this->fetchLatestGithubRelease();
             $checkOk = $fetchedVersion !== '';
             if ($checkOk) {
                 $latest = $fetchedVersion;
@@ -60,16 +77,14 @@ final class GitHubVersionChecker
             $checkedAt = $now;
 
             $this->writeCache([
-                'cache_version' => self::CACHE_VERSION,
-                'checked_at'    => $checkedAt,
+                'cache_version'  => self::CACHE_VERSION,
+                'plugin_version' => $current,
+                'checked_at'     => $checkedAt,
                 'latest'        => $latest,
                 'check_ok'      => $checkOk,
             ]);
         }
 
-        $current = defined('PLUGIN_MOD_VERSION')
-            ? (string) constant('PLUGIN_MOD_VERSION')
-            : '0.0.0';
         $checkAvailable = $checkOk && $latest !== '';
         $updateAvailable = $checkAvailable && version_compare($latest, $current, '>');
         $installedIsNewer = $checkAvailable && version_compare($current, $latest, '>');
@@ -87,46 +102,33 @@ final class GitHubVersionChecker
 
     private function fetchLatestGithubRelease(): string
     {
-        if (!function_exists('curl_init')) {
-            $this->logFailure('cURL extension is unavailable.');
-            return '';
-        }
+        try {
+            // Use GLPI's HTTP client so configured proxy settings and the
+            // platform's trusted TLS configuration are honored.
+            $response = (new HttpClient())->get(self::API_URL, [
+                'headers' => [
+                    'User-Agent' => 'ui-branding-glpi-plugin',
+                    'Accept' => 'application/vnd.github+json',
+                    'X-GitHub-Api-Version' => '2022-11-28',
+                ],
+                'timeout' => 10.0,
+                'max_redirects' => 3,
+            ]);
 
-        $handle = curl_init(self::API_URL);
-        if ($handle === false) {
-            $this->logFailure('Unable to initialize cURL.');
-            return '';
-        }
-
-        curl_setopt_array($handle, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_FOLLOWLOCATION => false,
-            CURLOPT_CONNECTTIMEOUT => 2,
-            CURLOPT_TIMEOUT        => 5,
-            CURLOPT_HTTPHEADER     => [
-                'User-Agent: ui-branding-glpi-plugin',
-                'Accept: application/vnd.github+json',
-                'X-GitHub-Api-Version: 2022-11-28',
-            ],
-            CURLOPT_SSL_VERIFYPEER => true,
-            CURLOPT_SSL_VERIFYHOST => 2,
-            CURLOPT_MAXREDIRS      => 0,
-        ]);
-
-        $body = curl_exec($handle);
-        $errorNumber = curl_errno($handle);
-        $errorMessage = curl_error($handle);
-        $httpCode = (int) curl_getinfo($handle, CURLINFO_HTTP_CODE);
-        curl_close($handle);
-
-        if (!is_string($body) || $body === '') {
-            $detail = $errorMessage !== '' ? ' (' . $errorMessage . ')' : '';
-            $this->logFailure(sprintf('cURL error %d%s.', $errorNumber, $detail));
+            $httpCode = $response->getStatusCode();
+            $body = $response->getContent(false);
+        } catch (\Throwable $e) {
+            $this->logFailure('GLPI HTTP client request failed: ' . $e->getMessage());
             return '';
         }
 
         if ($httpCode !== 200) {
             $this->logFailure(sprintf('GitHub API returned HTTP %d.', $httpCode));
+            return '';
+        }
+
+        if ($body === '') {
+            $this->logFailure('GitHub API returned an empty response.');
             return '';
         }
 

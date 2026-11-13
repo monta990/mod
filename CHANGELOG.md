@@ -2,6 +2,35 @@
 
 All notable changes to UI Branding are documented here.
 
+## [12.0.4] - 2026-11-07
+
+### Fixed
+- Add SHA-256 resource fingerprints to saved-preview URLs for the background, favicon, standard logos and theme logos, preventing stale images under the one-year immutable asset cache.
+
+### Tests
+- Extend the configuration template regression test to require fingerprinted URLs for every saved preview.
+
+## [12.0.4] - 2026-11-07
+
+### Fixed
+- Use GLPI's native HTTP client for GitHub version checks so the request honors the proxy configured in GLPI and its trusted TLS settings.
+- Increase the GitHub request timeout to ten seconds and retain explicit logging of transport failures.
+- Remove the direct dependency on the PHP cURL extension for version checking.
+
+### Tests
+- Add transport regression coverage for the GLPI HTTP client, GitHub API headers, timeout and response parsing.
+
+## [12.0.2] - 2026-11-07
+
+### Fixed
+- Restore server-rendered previews for the saved background, favicon and all standard/theme logos.
+- Render newly selected images on pre-existing canvas elements without assigning upload-derived values to DOM URL attributes.
+- Restore saved previews when file selections are cleared and show unsupported filenames as safe literal text.
+- Refresh the GitHub latest-release cache whenever the installed plugin version changes.
+
+### Tests
+- Add regression coverage for saved previews, canvas rendering, clearing selections, safe filename handling and GitHub cache invalidation.
+
 ## [12.0.1] - 2026-11-02
 
 ### Security

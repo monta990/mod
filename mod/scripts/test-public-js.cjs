@@ -21,6 +21,13 @@ class FakeElement {
         this.className = '';
         this.alt = '';
         this.src = '';
+        this.width = 0;
+        this.height = 0;
+        this.drawCalls = [];
+        this.context = {
+            clearRect() {},
+            drawImage: (...args) => this.drawCalls.push(args),
+        };
         this.files = [];
     }
 
@@ -42,6 +49,10 @@ class FakeElement {
 
     removeAttribute(name) {
         delete this.attributes[name];
+    }
+
+    getContext(type) {
+        return this.tagName === 'CANVAS' && type === '2d' ? this.context : null;
     }
 
     addEventListener(name, callback) {
@@ -101,12 +112,25 @@ function readPluginScript(name) {
     return fs.readFileSync(path.join(pluginRoot, 'public', name), 'utf8');
 }
 
-test('upload selection displays a safe text-only state without DOM URL sinks', () => {
+function createPreviewFixture() {
     const input = new FakeElement('input');
-    input.setAttribute('data-mod-preview', 'preview_logo');
-    const preview = new FakeElement('div');
-    preview.hidden = true;
-    preview.style = Object.create(null);
+    input.setAttribute('data-mod-preview', 'preview_logo_upload');
+    input.setAttribute('data-mod-default-preview', 'preview_logo_saved');
+    input.setAttribute('data-mod-status-preview', 'preview_logo_status');
+
+    const savedPreview = new FakeElement('img');
+    const canvas = new FakeElement('canvas');
+    canvas.setAttribute('data-mod-max-width', '640');
+    canvas.setAttribute('data-mod-max-height', '360');
+    canvas.hidden = true;
+    const status = new FakeElement('div');
+    status.hidden = true;
+
+    const elements = {
+        preview_logo_saved: savedPreview,
+        preview_logo_upload: canvas,
+        preview_logo_status: status,
+    };
     const documentListeners = Object.create(null);
     const document = {
         readyState: 'loading',
@@ -117,67 +141,146 @@ test('upload selection displays a safe text-only state without DOM URL sinks', (
             return [input];
         },
         getElementById(id) {
-            return id === 'preview_logo' ? preview : null;
+            return elements[id] || null;
         },
     };
+
+    return { input, savedPreview, canvas, status, document, documentListeners };
+}
+
+async function flushPromises() {
+    await new Promise((resolve) => setImmediate(resolve));
+    await Promise.resolve();
+}
+
+test('saved previews remain visible and selected images are rendered on canvas', async () => {
+    const fixture = createPreviewFixture();
+    let closeCount = 0;
 
     runScript(readPluginScript('uibranding.js'), {
-        document,
-        Map,
-        URL,
+        document: fixture.document,
+        createImageBitmap(file) {
+            assert.equal(file.name, 'new-logo.png');
+            return Promise.resolve({
+                width: 1280,
+                height: 640,
+                close() {
+                    closeCount += 1;
+                },
+            });
+        },
     });
-    documentListeners.DOMContentLoaded();
+    fixture.documentListeners.DOMContentLoaded();
 
-    input.files = [{ name: 'logo-new.png' }];
-    input.dispatch('change');
+    assert.equal(fixture.savedPreview.hidden, false);
+    assert.equal(fixture.canvas.hidden, true);
 
-    assert.equal(preview.hidden, false);
-    assert.equal(preview.style.backgroundImage, 'none');
-    assert.equal(preview.style.backgroundColor, 'var(--tblr-bg-surface-secondary)');
-    assert.equal(preview.getAttribute('aria-label'), 'logo-new.png');
-    assert.equal(preview.textContent, 'logo-new.png');
-    assert.equal(preview.src, '');
-    assert.equal(preview.getAttribute('src'), null);
+    fixture.input.files = [{ name: 'new-logo.png' }];
+    fixture.input.dispatch('change');
+    await flushPromises();
 
-    input.files = [];
-    input.dispatch('change');
-
-    assert.equal(preview.hidden, true);
-    assert.equal(preview.style.backgroundImage, 'none');
-    assert.equal(preview.getAttribute('aria-label'), null);
-    assert.equal(preview.textContent, '');
+    assert.equal(fixture.canvas.hidden, false);
+    assert.equal(fixture.canvas.width, 640);
+    assert.equal(fixture.canvas.height, 320);
+    assert.equal(fixture.canvas.getAttribute('aria-label'), 'new-logo.png');
+    assert.equal(fixture.canvas.drawCalls.length, 1);
+    assert.equal(fixture.savedPreview.hidden, true);
+    assert.equal(fixture.status.hidden, true);
+    assert.equal(closeCount, 1);
 });
 
-test('selected filenames are rendered as literal text, never interpreted as HTML', () => {
-    const input = new FakeElement('input');
-    input.setAttribute('data-mod-preview', 'preview_logo');
-    const preview = new FakeElement('div');
-    const documentListeners = Object.create(null);
-    const document = {
-        readyState: 'loading',
-        addEventListener(name, callback) {
-            documentListeners[name] = callback;
-        },
-        querySelectorAll() {
-            return [input];
-        },
-        getElementById(id) {
-            return id === 'preview_logo' ? preview : null;
-        },
-    };
+test('unsupported images use literal filename text and keep the saved preview visible', () => {
+    const fixture = createPreviewFixture();
+    const hostileFilename = '<img src=x onerror=alert(1)> & "quoted".ico';
 
-    runScript(readPluginScript('uibranding.js'), { document });
-    documentListeners.DOMContentLoaded();
+    runScript(readPluginScript('uibranding.js'), { document: fixture.document });
+    fixture.documentListeners.DOMContentLoaded();
 
-    const hostileFilename = '<img src=x onerror=alert(1)> & "quoted".png';
-    input.files = [{ name: hostileFilename }];
-    input.dispatch('change');
+    fixture.input.files = [{ name: hostileFilename }];
+    fixture.input.dispatch('change');
 
-    assert.equal(preview.hidden, false);
-    assert.equal(preview.textContent, hostileFilename);
-    assert.equal(preview.getAttribute('aria-label'), hostileFilename);
-    assert.equal(preview.children.length, 0);
-    assert.equal(preview.getAttribute('src'), null);
+    assert.equal(fixture.canvas.hidden, true);
+    assert.equal(fixture.status.hidden, false);
+    assert.equal(fixture.status.textContent, hostileFilename);
+    assert.equal(fixture.savedPreview.hidden, false);
+    assert.equal(fixture.status.children.length, 0);
+});
+
+test('saved preview is restored when a later selected image cannot be decoded', async () => {
+    const fixture = createPreviewFixture();
+
+    runScript(readPluginScript('uibranding.js'), {
+        document: fixture.document,
+        createImageBitmap(file) {
+            if (file.name === 'broken.ico') {
+                return Promise.reject(new Error('Unsupported icon payload'));
+            }
+            return Promise.resolve({
+                width: 320,
+                height: 180,
+                close() {},
+            });
+        },
+    });
+    fixture.documentListeners.DOMContentLoaded();
+
+    fixture.input.files = [{ name: 'first.png' }];
+    fixture.input.dispatch('change');
+    await flushPromises();
+    assert.equal(fixture.savedPreview.hidden, true);
+
+    fixture.input.files = [{ name: 'broken.ico' }];
+    fixture.input.dispatch('change');
+    await flushPromises();
+
+    assert.equal(fixture.savedPreview.hidden, false);
+    assert.equal(fixture.canvas.hidden, true);
+    assert.equal(fixture.status.hidden, false);
+    assert.equal(fixture.status.textContent, 'broken.ico');
+});
+
+test('clearing a selected upload restores the saved preview and clears the canvas', async () => {
+    const fixture = createPreviewFixture();
+
+    runScript(readPluginScript('uibranding.js'), {
+        document: fixture.document,
+        createImageBitmap() {
+            return Promise.resolve({
+                width: 320,
+                height: 180,
+                close() {},
+            });
+        },
+    });
+    fixture.documentListeners.DOMContentLoaded();
+
+    fixture.input.files = [{ name: 'replacement.png' }];
+    fixture.input.dispatch('change');
+    await flushPromises();
+    assert.equal(fixture.savedPreview.hidden, true);
+
+    fixture.input.files = [];
+    fixture.input.dispatch('change');
+
+    assert.equal(fixture.savedPreview.hidden, false);
+    assert.equal(fixture.canvas.hidden, true);
+    assert.equal(fixture.canvas.width, 0);
+    assert.equal(fixture.canvas.height, 0);
+    assert.equal(fixture.canvas.getAttribute('aria-label'), null);
+    assert.equal(fixture.status.hidden, true);
+    assert.equal(fixture.status.textContent, '');
+});
+
+test('preview script does not create DOM URL sinks or interpret filenames as markup', () => {
+    const source = readPluginScript('uibranding.js');
+
+    assert.doesNotMatch(source, /createObjectURL|revokeObjectURL|\bURL\b/);
+    assert.doesNotMatch(source, /createElement\s*\(/);
+    assert.doesNotMatch(source, /\.(?:src|href)\s*=/);
+    assert.doesNotMatch(source, /setAttribute\s*\(\s*['"](?:src|href)['"]/i);
+    assert.doesNotMatch(source, /innerHTML|outerHTML|insertAdjacentHTML/i);
+    assert.match(source, /drawImage\s*\(/);
+    assert.match(source, /textContent\s*=/);
 });
 
 test('public preview script never creates elements or assigns src/href', () => {
@@ -196,21 +299,32 @@ test('favicon script does not create URL-bearing DOM elements or copy href value
     assert.doesNotMatch(source, /innerHTML|outerHTML|insertAdjacentHTML/i);
 });
 
+test('saved image previews remain in the configuration template', () => {
+    const template = fs.readFileSync(path.join(pluginRoot, 'templates', 'uibranding.html.twig'), 'utf8');
+
+    assert.match(template, /<img id="preview_background"[\s\S]*?src="\{\{ preview_url \}\}\/background\?v=\{\{ preview_versions\.background \}\}"/);
+    assert.match(template, /<img id="preview_favicon"[\s\S]*?src="\{\{ preview_url \}\}\/favicon\?v=\{\{ preview_versions\.favicon \}\}"/);
+    assert.equal((template.match(/<img id="preview_\{\{ logo\.name \}\}"/g) || []).length, 2);
+    assert.equal((template.match(/(?<!-)src="\{\{ preview_url \}\}\/\{\{ logo\.name \}\}\?v=\{\{ preview_versions\[logo\.name\] \}\}"/g) || []).length, 2);
+    assert.equal((template.match(/data-mod-default-src="\{\{ preview_url \}\}\/\{\{ logo\.name \}\}\?v=\{\{ preview_versions\[logo\.name\] \}\}"/g) || []).length, 2);
+    assert.ok(template.includes('data-mod-default-preview="preview_{{ logo.name }}"'));
+});
+
 test('preview containers remain hidden when no file is selected', () => {
     const template = fs.readFileSync(path.join(pluginRoot, 'templates', 'uibranding.html.twig'), 'utf8');
 
     assert.match(
         template,
-        /\.mod-preview-background\[hidden\],\s*\.mod-preview-logo\[hidden\],\s*\.mod-preview-favicon\[hidden\]\s*\{\s*display:\s*none\s*!important;/s
+        /\.mod-preview-image\[hidden\],\s*\.mod-preview-canvas\[hidden\],\s*\.mod-preview-status\[hidden\]\s*\{\s*display:\s*none\s*!important;/s
     );
 });
 
 test('release workflow gates publication on the exact numeric tag', () => {
     const workflow = fs.readFileSync(path.resolve(pluginRoot, '..', '.github', 'workflows', 'ci.yml'), 'utf8');
 
-    assert.match(workflow, /if: github\.ref == 'refs\/tags\/12\.0\.1'/);
+    assert.match(workflow, /if: github\.ref == 'refs\/tags\/12\.0\.4'/);
     assert.doesNotMatch(workflow, /startsWith\(github\.ref/);
-    assert.doesNotMatch(workflow, /v12\.0\.1/);
+    assert.doesNotMatch(workflow, /v12\.0\.4/);
 });
 
 test('favicon logic reuses the trusted server-rendered link and removes native duplicates', () => {

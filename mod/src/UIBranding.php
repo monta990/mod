@@ -78,10 +78,16 @@ final class UIBranding
     public function getViewData(string $url, string $previewUrl): array
     {
         $config = BrandManager::getConfiguration();
+        $previewVersions = [];
+
+        foreach (array_keys(BrandManager::getImageResources()) as $resourceName) {
+            $previewVersions[$resourceName] = BrandManager::getResourceFingerprint($resourceName);
+        }
 
         return [
             'url'                 => $url,
             'preview_url'         => $previewUrl,
+            'preview_versions'    => $previewVersions,
             'show_background'     => $config['login'] === '1',
             'show_custom_logos'   => $config['show_logos'] === '1',
             'use_theme_logos'     => $config['theme_logos'] === '1',
